@@ -1,0 +1,16 @@
+This third Proof of Concept is the last step before the official opening of the
+Python Aboard project.  The main goal of this POC is to be stable and rich
+enough tu support the Python Aboard website (or, at least, its beginnings).
+1.  Provide a query builder and allow the model relations:  models should be
+    connected (a user be part of a group, for instance) and the query builder
+    could achieve this goal and propose even more useful possibilities to the
+    model's structure.
+2.  Setup the code architecture as it finally will be.  This doesn't prevent
+    the PA-POC3 repository from proposing a user's configuration, but it
+    shouldn't be kept in the source directory.
+3.  Define a set of tools to install and uninstall bundles, plugins, check
+    the user's configuration, analyze the router, query the installation via a
+    Python console, reload one bundle or the whole user's configuration,
+    manage a Python aboard server through a daemon, and so forth.
+4.  Create a validator system, which will check the user's datas, their
+    types and expected values.
