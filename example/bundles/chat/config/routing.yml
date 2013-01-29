@@ -1,0 +1,8 @@
+# Controller: Message
+chat:
+  pattern: /chat
+  controller: chat.Chat.index
+
+ws:
+  pattern: /ws
+  controller: chat.Chat.ws

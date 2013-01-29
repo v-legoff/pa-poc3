@@ -1,0 +1,114 @@
+<% extends "layout/base.jj2" %>
+<% block title %>Chat with 'em<% endblock %>
+    <% block content %>
+        <audio preload="auto" id="snd_message">
+            <source src="/static/sounds/message.ogg" type="audio/ogg">
+            <source src="/static/sounds/message.mp3" type="audio/mp3">
+        </audio>
+        <audio preload="auto" id="snd_connect">
+            <source src="/static/sounds/chime.ogg" type="audio/ogg">
+            <source src="/static/sounds/chime.mp3" type="audio/mp3">
+        </audio>
+        <h1>Chat window</h1>
+        <p><em>Welcome</em> on the Chat Window.<br />
+        <span id="nb_online">They are nobody connected yet</span>
+        (<a id="detail_connected" href="">show the list</a>).</p>
+        <div id="connected_list"></div>
+        <form action="#" method="GET">
+            <p><span id="instruction">Enter your pseudo</span>:
+            <input type="text" id="pseudo" />
+            <input type="submit" id="setpseudo" value="Connect" />
+        </p>
+        </form>
+        <div id="chat" style="max-height:600px;overflow:auto;"></div>
+        <div id="last_message" aria-live="assertive"></div>
+        <form action="#" method="get">
+            <p id="chat_window"><input type="text" name="message" id="message" />
+            <input id="send" type="submit" value="Send" /></p>
+        </form>
+    <script type='application/javascript' src='/static/js/jquery-1.9.0.min.js'></script>
+    <script type='application/javascript' src='/static/js/jquery.json-2.4.min.js'></script>
+    <script type='application/javascript' src='/static/js/jquery.websocket-0.0.1.js'></script>
+    <script type='application/javascript'>
+    $(document).ready(function() {
+        $('#connected_list').hide()
+        var ws = $.websocket("<= full_URL(protocol="ws", path="ws") =>", {
+            events: {
+                error: function(e) {
+                    message = e.data.message;
+                    $('#chat').html($('#chat').html() + "<br />" + $('#last_message').html());
+                    $('#last_message').html("<strong>" + message + "</strong>");
+                },
+                message: function(e) {
+                    message = e.data.message;
+                    $('#chat').html($('#chat').html() + "<br />" + $('#last_message').html());
+                    $('#last_message').html(message);
+                    $('#snd_message')[0].play();
+                },
+                setpseudo: function(e) {
+                    pseudo = e.data.pseudo;
+                    newpseudo = e.data.newpseudo;
+                    if(newpseudo)
+                    {
+                        $('#instruction').text('Your current pseudo');
+                        $('#setpseudo').val('Change');
+                        $('#snd_connect')[0].play();
+                    }
+                },
+                update_online: function(e) {
+                    nb_online = e.data.nb_online;
+                    pseudos = e.data.pseudos;
+                    if (nb_online == 0) 
+                    {
+                        message = "There is nobody connected yet";
+                        $('#connected_list').html("");
+                    }
+                    else if (nb_online == 1)
+                    {
+                        message = "There is one people online";
+                        $('#connected_list').html('<ul><li>' + pseudos[0] + '</li></ul>');
+                    }
+                    else
+                    {
+                        message = "There are " + nb_online + " people online";
+                        code = "<ul>";
+                        for (i = 0; i < pseudos.length; i++)
+                        {
+                            code += '<li>' + pseudos[i] + '</li>';
+                        }
+                        code += '</ul>';
+                        $('#connected_list').html(code);
+                    }
+                    $('#nb_online').text(message);
+                }
+            }
+        });
+        
+        $('#detail_connected').click(function() {
+            if($('#connected_list').is(':visible'))
+            {
+                $('#connected_list').hide();
+                $(this).text('show the list');
+            }
+            else
+            {
+                $('#connected_list').show();
+                $(this).text('hide the list');
+            }
+            return false;
+        });
+        
+        $('#setpseudo').click(function() {
+            pseudo = $('#pseudo').val();
+            ws.send("setpseudo", {"pseudo": pseudo});
+            return false;
+        });
+
+        $('#send').click(function() {
+            ws.send("message", {"message": $('#message').val()});
+            $('#message').val("");
+            return false;
+        });
+        });
+        </script>
+    <% endblock %>
