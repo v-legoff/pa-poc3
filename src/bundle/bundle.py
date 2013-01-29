@@ -115,6 +115,23 @@ class Bundle:
                 fs_root)
         loader.load_modules("service", "bundles." + self.name + ".services",
                 fs_root)
+        
+        # Add a static path if the bundle has a 'static' directory
+        abs_path = os.path.join(server.user_directory, "bundles", self.name,
+                "static")
+        if os.path.exists(abs_path):
+            rel_path = "/" + self.name + "/static"
+            static_path = os.path.join("bundles", self.name, "static")
+            server.cp_config.update({
+                rel_path: {
+                    'tools.staticdir.on': True,
+                    'tools.staticdir.dir': static_path,
+                    'tools.staticdir.content_types': {
+                        'ogg': 'application/ogg',
+                    },
+                },
+            })
+
         return True
     
     def read_meta_datas(self):

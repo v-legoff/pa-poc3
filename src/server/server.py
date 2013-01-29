@@ -59,6 +59,7 @@ class Server:
         self.port = 9000
         self.hostname = "localhost"
         self.user_directory = self.check_directory(user_directory)
+        self.cp_config = {}
         self.dispatcher = AboardDispatcher()
         self.loader = AutoLoader(self)
         self.bundles = {}
@@ -174,16 +175,18 @@ class Server:
         })
         cherrypy.config["tools.encode.on"] = True
         cherrypy.config["tools.decode.on"] = True
-        config = {
+        config = self.cp_config
+        config.update({
             '/static': {
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': 'static',
                 'tools.staticdir.content_types': {
                         'ogg': 'application/ogg',
-                }
-            }
-        }
+                },
+            },
+        })
         
+        print(config)
         # Some plugins add configuration
         self.plugin_manager.call("extend_server_configuration", cherrypy.engine, config)
         cherrypy.tree.mount(root=self.dispatcher, config=config)
