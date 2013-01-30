@@ -176,4 +176,3 @@ class AutoLoader:
                 loaded.append(ret)
         
         return loaded
-

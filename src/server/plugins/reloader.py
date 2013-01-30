@@ -75,7 +75,8 @@ class Reloader(Autoreloader):
                         # The file has been deleted or modified.
                         self.bus.log("The module {} changed, try to reload "
                                 "it.".format(filename))
-                        path = os.path.relpath(filename)[:-3]
+                        path = os.path.relpath(filename,
+                                self.server.user_directory)[:-3]
                         self.loader.reload_module(path)
                         if mtime:
                             self.mtimes[filename] = mtime

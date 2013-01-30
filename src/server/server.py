@@ -167,6 +167,7 @@ class Server:
         cherrypy.engine.autoreload.unsubscribe()
         cherrypy.engine.reloader = Reloader(cherrypy.engine)
         cherrypy.engine.reloader.loader = self.loader
+        cherrypy.engine.reloader.server = self
         cherrypy.engine.reloader.subscribe()
         cherrypy.config.update({
                 'server.socket_host': self.host,
@@ -186,7 +187,6 @@ class Server:
             },
         })
         
-        print(config)
         # Some plugins add configuration
         self.plugin_manager.call("extend_server_configuration", cherrypy.engine, config)
         cherrypy.tree.mount(root=self.dispatcher, config=config)
