@@ -1,19 +1,20 @@
 <% extends "layout/base.jj2" %>
 <% block title %>Chat with 'em<% endblock %>
     <% block content %>
-        <audio preload="auto" id="snd_message">
-            <source src="/static/sounds/message.ogg" type="audio/ogg">
-            <source src="/static/sounds/message.mp3" type="audio/mp3">
+    <% for event in snd_events %>
+        <% set choice = snd_chosen[event] %>
+        <audio preload="auto" id="snd_<= event =>">
+            <source id="snd_<= event =>_ogg"
+                    src="/static/sounds/<= choice =>.ogg" type="audio/ogg">
+            <source id="snd_<= event =>_mp3"
+                    src="/static/sounds/<= choice =>.mp3" type="audio/mp3">
         </audio>
-        <audio preload="auto" id="snd_connect">
-            <source src="/static/sounds/chime.ogg" type="audio/ogg">
-            <source src="/static/sounds/chime.mp3" type="audio/mp3">
-        </audio>
+    <% endfor %>
         <h1>Chat window</h1>
         <p><em>Welcome</em> on the Chat Window.<br />
-        <span id="nb_online">They are nobody connected yet</span>
+        <span id="nb_online">There is nobody connected yet</span>
         (<a id="detail_connected" href="">show the list</a>).</p>
-        <div id="connected_list"></div>
+        <div id="connected_list"><div><p>Nothing</p></div></div>
         <form action="#" method="GET">
             <p><span id="instruction">Enter your pseudo</span>:
             <input type="text" id="pseudo" />
@@ -26,28 +27,57 @@
         </div>
         <form action="#" method="get">
             <p id="chat_window"><input type="text" name="message" id="message" />
-            <input id="send" type="submit" value="Send" /></p>
+            <input id="send" type="submit" value="Send" />
+            <a href="" id="toggle_settings">Settings</a></p>
         </form>
-        <a href="" id="#toggle_settings">settings</a>
         <div id="settings">
-            <table>
-            <tr>
-            <td><a href="" id="sound_settings">Sounds</a></td>
-            </tr>
-            </table>
-            <div id="settings_tab"></div>
+            <div class="hlist">
+                <ul>
+                    <li><a href="" class="tab_setting">Sounds</a></li>
+                    <li><a href="" class="tab_setting">Accessibility</a></li>
+                </ul>
+            </div>
+            <div class="settings_tab" id="settings_sounds">
+                <h2>Sounds settings</h2>
+                <table>
+                    <tr>
+                        <th>Played when</th>
+                        <th>Sound</th>
+                        <th> </th>
+                    </tr>
+                <% for name in snd_events|sort %>
+                    <% set description = snd_events[name] %>
+                    <% set choice = snd_chosen[name] %>
+                    <tr>
+                        <td><= description =></td>
+                        <td>
+                            <select id="sel_<= name =>">
+                            <% for sound, sound_name in sounds|dictsort(by="value") %>
+                                <option
+                                <% if sound == choice %>
+                                    selected
+                                <% endif %>
+                                value="<= sound =>"><= sound_name =></option>
+                            <% endfor %>
+                            </select>
+                        </td>
+                        <td><button class="btn_test"
+                                id="btn_<= name =>">test</button></td>
+                    </tr>
+                <% endfor %>
+                </table>
+                <audio id="snd_test">
+                    <source id="ogg_test" type="audio/ogg" />
+                    <source id="mp3_test" type="audio/mp3" />
+                </audio>
+            </div>
+            <div class="settings_tab" id="settings_accessibility">
+                <h2>Accessibility</h2>
+                <p>What should your screen reader do?</p>
+                </div>
+            <p><button id="save_settings">Save</button>
+            <button id="close_settings">Close</button></p>
         </div>
-        <audio id="snd_test">
-            <source src="/static/sounds/chime.ogg" id="ogg_test" type="audio/ogg">
-            <source src="/static/sounds/chime.mp3" id="mp3_test" type="audio/mp3">
-        </audio>
-        <!-- <form>
-            <select id="sound_test">
-                <option id="message">message</option>
-                <option id="chime">chime</option>
-            </select>
-            <button id="audio_test">test</button>
-        </form> -->
     <% endblock %>
     <% block foot %>
     <script type="text/javascript" src="/static/js/jquery-1.9.0.min.js"></script>

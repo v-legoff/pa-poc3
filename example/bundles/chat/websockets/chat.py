@@ -20,7 +20,7 @@ class Chat(WebSocketHandler):
     def opened(self):
         """The connection has succeeded."""
         WebSocketHandler.opened(self)
-        self.update_online()
+        #self.update_online()
     
     def closed(self, code, reason="A client left without explanation."):
         """The client closes the connection."""
