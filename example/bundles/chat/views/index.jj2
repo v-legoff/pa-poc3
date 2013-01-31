@@ -81,8 +81,9 @@
     <% endblock %>
     <% block foot %>
     <script type="text/javascript" src="/static/js/jquery-1.9.0.min.js"></script>
-    <script type="text/javascript" src="/static/js/jquery.json-2.4.min.js"></script>
-    <script type="text/javascript" src="/static/js/jquery.websocket-0.0.1.js"></script>
+    <script type="text/javascript" src="/chat//static/js/jquery.json-2.4.min.js"></script>
+    <script type="text/javascript" src="/chat/static/js/jquery.websocket-0.0.1.js"></script>
     <script type="text/javascript" src="/chat/static/js/chat.js">
+        createWS('<= full_URL(protocol="ws", path="ws") =>');
     </script>
     <% endblock %>
