@@ -3,83 +3,118 @@
  * and more.
  */
 
+// Variable definitions
+var ws = undefined;
+
+/**
+ * Create the websocket connection with the specified arguments
+ * Example: connectWS("ws://localhost:9000/ws");
+ */
+function connectWS(parameters)
+{
+    ws = $.websocket(parameters, {
+        events: {
+            error: function(e) {
+                var message = e.data.message;
+                var last_message = $('#last_message').html();
+                var history = $('#history').html();
+                $('#history').html(history + "<br />" + last_message);
+                $('#last_message').html("<strong>" + message + "</strong>");
+            },
+            
+            message: function(e) {
+                var message = e.data.message;
+                var message = e.data.message;
+                var last_message = $('#last_message').html();
+                var history = $('#history').html();
+                $('#history').html(history + "<br />" + last_message);
+                $('#last_message').html(message);
+                $('#snd_message')[0].play();
+            },
+            
+            setpseudo: function(e) {
+                pseudo = e.data.pseudo;
+                newpseudo = e.data.newpseudo;
+                if(newpseudo)
+                {
+                    $('#instruction').text('Your current pseudo');
+                    $('#setpseudo').val('Change');
+                    $('#snd_connect')[0].play();
+                }
+            },
+            
+            update_online: function(e) {
+                nb_online = e.data.nb_online;
+                pseudos = e.data.pseudos;
+                if(nb_online == 0) 
+                {
+                    var message = "There is nobody connected yet";
+                    $('#connected_list').html("");
+                }
+                else if(nb_online == 1)
+                {
+                    var message = "There is one people online";
+                    var code = "<ul><li>" + pseudos[0] + "</li></ul>";
+                    $('#connected_list').html(code);
+                }
+                else
+                {
+                    var message = "There are " + nb_online + " people online";
+                    code = "<ul>";
+                    for(i = 0; i < pseudos.length; i++)
+                    {
+                        code += "<li>" + pseudos[i] + "</li>";
+                    }
+                    code += "</ul>";
+                    $('#connected_list').html(code);
+                }
+                $('#nb_online').text(message);
+            }
+        }
+    });
+}
+
 $(document).ready(function()
 {
-    // Variable definitions
-    var = null;
-    
     // When the page is loaded
     $('#connected_list').hide();
     $('#settings').hide();
     $('div.settings_tab').hide();
     $('#settings_sounds').show();
     
+    // Functions definition
+    
     /**
-     * Create the websocket connection with the specified arguments
-     * Example: connectWS("ws://localhost:9000/ws");
+     * Save the sounds settings
      */
-    function connectWS(parameters)
+    function save_sounds_settings()
     {
-        ws = $.websocket(parameters, {
-            events: {
-                error: function(e) {
-                    var message = e.data.message;
-                    var last_message = $('#last_message').html();
-                    var history = $('#history').html();
-                    $('#history').html(history + "<br />" + last_message);
-                    $('#last_message').html("<strong>" + message + "</strong>");
-                },
-                
-                message: function(e) {
-                    var message = e.data.message;
-                    var message = e.data.message;
-                    var last_message = $('#last_message').html();
-                    var history = $('#history').html();
-                    $('#history').html(history + "<br />" + last_message);
-                    $('#last_message').html(message);
-                    $('#snd_message')[0].play();
-                },
-                
-                setpseudo: function(e) {
-                    pseudo = e.data.pseudo;
-                    newpseudo = e.data.newpseudo;
-                    if(newpseudo)
-                    {
-                        $('#instruction').text('Your current pseudo');
-                        $('#setpseudo').val('Change');
-                        $('#snd_connect')[0].play();
-                    }
-                },
-                
-                update_online: function(e) {
-                    nb_online = e.data.nb_online;
-                    pseudos = e.data.pseudos;
-                    if(nb_online == 0) 
-                    {
-                        var message = "There is nobody connected yet";
-                        $('#connected_list').html("");
-                    }
-                    else if(nb_online == 1)
-                    {
-                        var message = "There is one people online";
-                        var code = "<ul><li>" + pseudos[0] + "</li></ul>";
-                        $('#connected_list').html(code);
-                    }
-                    else
-                    {
-                        var message = "There are " + nb_online + " people online";
-                        code = "<ul>";
-                        for(i = 0; i < pseudos.length; i++)
-                        {
-                            code += "<li>" + pseudos[i] + "</li>";
-                        }
-                        code += "</ul>";
-                        $('#connected_list').html(code);
-                    }
-                    $('#nb_online').text(message);
-                }
-            }
+        $('#settings_sounds select').each(function(index)
+        {
+            var select_id = $(this).attr('id');
+            var event_id = select_id.substring(4);
+            var choice = $(this).children('option:selected').attr('value');
+            var oggFile = '/static/sounds/' + choice + '.ogg';
+            var mp3File = '/static/sounds/' + choice + '.mp3';
+            var audio = $('#snd_' + event_id)[0];
+            $('#snd_' + event_id + '_ogg').attr('src', oggFile);
+            $('#snd_' + event_id + '_mp3').attr('src', mp3File);
+            audio.load();
         });
+    }
+    
+    /**
+     * Save the current (visible tab) settings
+     */
+    function save_settings()
+    {
+        // Try to find the visible div
+        var current_id = $('div.settings_tab:visible').attr('id');
+        var parameter = current_id.substring(9);
+        if(parameter == "sounds")
+        {
+            save_sounds_settings();
+        }
     }
     
     // Page events
@@ -160,33 +195,6 @@ $(document).ready(function()
         audio.play();
         return false;
     });
-    
-    function save_sounds_settings()
-    {
-        $('#settings_sounds select').each(function(index)
-        {
-            var select_id = $(this).attr('id');
-            var event_id = select_id.substring(4);
-            var choice = $(this).children('option:selected').attr('value');
-            var oggFile = '/static/sounds/' + choice + '.ogg';
-            var mp3File = '/static/sounds/' + choice + '.mp3';
-            var audio = $('#snd_' + event_id)[0];
-            $('#snd_' + event_id + '_ogg').attr('src', oggFile);
-            $('#snd_' + event_id + '_mp3').attr('src', mp3File);
-            audio.load();
-        });
-    }
-    
-    function save_settings()
-    {
-        // Try to find the visible div
-        var current_id = $('div.settings_tab:visible').attr('id');
-        var parameter = current_id.substring(9);
-        if(parameter == "sounds")
-        {
-            save_sounds_settings();
-        }
-    }
     
     $('a.tab_setting').click(function()
     {

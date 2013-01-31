@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module containing the AuthenticationService class.
+"""Module containing the UserProviderService class.
 
-This class contains the authentication service, used to generate and
-store in a client cookie access tokens.  This is one of the way a web service
-can identify a client as 'connected'.
+This class contains the user_provider service, originally used to
+link an access token to a valid user, if it is possible.  This
+service is highly customizable and can find other informations
+than users, as well as receive something else than tokens.
 
 """
 
