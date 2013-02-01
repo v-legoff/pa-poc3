@@ -4,11 +4,13 @@ from controller import Controller
 
 # Constants
 SOUNDS = {
+    "bubble": "bubble",
     "cartoon_giggle": "cartoon giggle",
     "chime": "chime",
     "couac": "couac",
     "glass": "glass",
     "long_chime": "long chime",
+    "snap": "finger snap",
 }
 
 SND_EVENTS = {
