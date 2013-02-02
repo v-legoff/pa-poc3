@@ -65,6 +65,10 @@ class Model(metaclass=MetaModel):
     
     """
     
+    data_connector = None
+    bundle = None
+    
+    # Default fields
     id = Integer(pkey=True, auto_increment=True)
     
     # Class methods
@@ -150,7 +154,7 @@ class Model(metaclass=MetaModel):
         This method SHOULD NOT be redefined in a subclass.
         
         """
-        fields = get_fields(type(self))
+        fields = get_fields(type(self), register=True)
         fields = dict((field.field_name, field) for field in fields)
         for name, value in kwargs.items():
             object.__setattr__(self, name, value)
@@ -186,8 +190,8 @@ class Model(metaclass=MetaModel):
         This method checks the value type as well.
         
         """
-        field = getattr(self, attr)
-        if isinstance(field, BaseType):
+        field = getattr(type(self), attr)
+        if isinstance(field, BaseType) and field.register:
             # Check the value type
             check = field.accept_value(value)
         
@@ -197,7 +201,8 @@ class Model(metaclass=MetaModel):
             # Not set yet
             old_value = None
         
-        if Model.data_connector and Model.data_connector.running:
+        if field.register and Model.data_connector and \
+                Model.data_connector.running:
             with Model.data_connector.u_lock:
                 Model.data_connector.update_object(self, attr, old_value)
     

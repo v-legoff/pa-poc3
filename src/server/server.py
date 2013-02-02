@@ -197,7 +197,7 @@ class Server:
         """Try and retrieve a Model class."""
         bundle_name, model_name = name.split(".")
         bundle = self.bundles[bundle_name]
-        model = bundle.models[model_name]
+        model = bundle.models[name]
         return model
     
     def get_cookie(self, name, value=None):

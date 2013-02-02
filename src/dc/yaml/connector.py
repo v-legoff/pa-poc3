@@ -114,7 +114,8 @@ class YAMLConnector(DataConnector):
     def record_model(self, model):
         """Record the given model."""
         name = DataConnector.record_model(self, model)
-        filename = self.location + "/" + name + ".yml"
+        plural_name = get_plural_name(model)
+        filename = self.location + "/" + plural_name + ".yml"
         if os.path.exists(filename):
             with open(filename, "r") as file:
                 self.read_table(name, file)
@@ -191,7 +192,9 @@ class YAMLConnector(DataConnector):
         
         objects.insert(0, header)
         content = yaml.dump(objects, default_flow_style=False)
-        with open(self.location + "/" + name + ".yml", "w") as file:
+        model = self.models[name]
+        plural_name = get_plural_name(model)
+        with open(self.location + "/" + plural_name + ".yml", "w") as file:
             file.write(content)
     
     def get_all_objects(self, model):

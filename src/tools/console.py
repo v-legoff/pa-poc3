@@ -26,47 +26,37 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the MetaModel metaclass."""
+"""This file contains the Console class (console tool)."""
 
-from model.functions import *
+from code import InteractiveConsole
+import sys
+import traceback
 
-class MetaModel(type):
+from model import Model
+
+class Console:
     
-    """The model's metaclass.
+    """Console tool."""
     
-    Its job is to set the field list right.  The most important things are:
-    -   Check that every field inherited from another class is copied
-    -   Check that the field NIDs are properly set.
+    def __init__(self, globals):
+        self.globals = globals
+        self.console = InteractiveConsole(self.globals)
+        self.prompt = ">>> "
     
-    """
-    
-    def __init__(cls, name, parents, attributes):
-        type.__init__(cls, name, parents, attributes)
-        fields = get_fields(cls)
-        clean_fields = []
-        for field in fields:
-            if field not in attributes.values():
-                # The field is obviously defined in a parent class
-                copied = field.copy()
-                # We can count on the field_name attribute whic has been set
-                # previously
-                name = field.field_name
-                setattr(cls, name, copied)
-                field = copied
+    def launch(self):
+        """Launch the tool."""
+        running = True
+        while running:
+            try:
+                code = input(self.prompt)
+            except (KeyboardInterrupt, EOFError):
+                running = False
+                break
+            
+            try:
+                ret = self.console.push(code)
+            except Exception:
+                print(traceback.format_exc())
             else:
-                name = [name for name, attr in attributes.items() if attr is \
-                        field][0]
-            field.field_name = name
-            clean_fields.append(field)
-        
-        # We set the NIDs
-        nids = sorted(field.nid for field in clean_fields)
-        for i, nid in enumerate(nids):
-            field = clean_fields[i]
-            field.nid = nid
-            field.model = cls
-            field.extend()
-    
-    def __repr__(self):
-        """Return the model's name."""
-        return get_name(self, bundle=False)
+                self.prompt = "... " if ret else ">>> "
+                Model.data_connector.loop()

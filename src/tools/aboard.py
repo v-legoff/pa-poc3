@@ -28,6 +28,7 @@
 
 """Script to launch the Python Aboard server."""
 
+import argparse
 import os
 import sys
 
@@ -35,16 +36,24 @@ import path
 
 from server.server import Server
 from model import Model
+from tools.console import Console
 
-# Read sys.argv
-if len(sys.argv) < 2:
-    print("You must indicate the user's configuration directory.")
-    sys.exit(1)
-
-directory = sys.argv[1]
+# Read the program's argument
+parser = argparse.ArgumentParser()
+parser.add_argument("user_directory",
+    help="the relative or absolute path leading to the project's directory")
+parser.add_argument("-c", "--console",
+        help="launch the interactive console", action="store_true")
+args = parser.parse_args()
+directory = args.user_directory
 server = Server(directory)
 server.load_configurations()
 server.prepare()
 server.load_bundles()
-server.run()
+if args.console:
+    console = Console({'server': server})
+    console.launch()
+else:
+    server.run()
+
 Model.data_connector.loop()

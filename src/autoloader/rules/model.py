@@ -29,6 +29,7 @@
 """Module containing the ModelRule class."""
 
 from autoloader.rules.base import Rule
+from model.functions import get_name
 
 class ModelRule(Rule):
     
@@ -57,12 +58,14 @@ class ModelRule(Rule):
         
         """
         name = Rule.module_name(module)
+        bundle_name = Rule.bundle_name(module)
+        bundle = self.server.bundles[bundle_name]
         class_name = name.capitalize()
         mod_class = getattr(module, class_name)
+        mod_class.bundle = bundle
         mod_class.data_connector = self.data_connector
         self.data_connector.record_model(mod_class)
         
         # Write the class in the bundles
-        bundle_name = Rule.bundle_name(module)
-        self.server.bundles[bundle_name].models[class_name] = mod_class
+        bundle.models[get_name(mod_class)] = mod_class
         return mod_class

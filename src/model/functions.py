@@ -41,18 +41,38 @@ Functions defined here:
 
 from model.types import BaseType
 
-def get_fields(model):
-    """Return a list of the defined fields in this model."""
+def get_fields(model, register=False):
+    """Return a list of the defined fields in this model.
+    
+    If register is True, only return the fields that can be registered (not
+    the relations).
+    
+    """
     fields = [getattr(model, name) for name in dir(model)]
     fields = [field for field in fields if isinstance(field, BaseType)]
     fields = sorted(fields, key=lambda field: field.nid)
+    if register:
+        fields = [field for field in fields if field.register]
+    
     return fields
 
-def get_name(model):
-    """Return the model name."""
+def get_name(model, bundle=True, lower=False):
+    """Return the model name.
+    
+    If bundle is True, include the bundle's name.
+    If lower is True, the name is lowercased.
+    
+    """
     name = model.__name__
     name = name.split(".")[-1]
-    return name.lower()
+    if bundle:
+        bundle_name = model.bundle.name
+        name = bundle_name + "." + name
+    
+    if lower:
+        name = name.lower()
+    
+    return name
 
 def get_plural_name(model):
     """Return the plural model's name.
@@ -65,7 +85,7 @@ def get_plural_name(model):
     if hasattr(model, "plural_name"):
         return model.plural_name
     else:
-        singular_name = get_name(model)
+        singular_name = get_name(model, bundle=False, lower=True)
         if singular_name.endswith("y"):
             singular_name = singular_name[:-1] + "ies"
         elif singular_name.endswith("s"):
