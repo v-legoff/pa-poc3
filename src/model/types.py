@@ -63,6 +63,7 @@ class BaseType:
         self.auto_increment = False
         self.default = default
         self.register = True
+        self.set_default = True
         
         if default:
             if not callable(default):
@@ -208,6 +209,7 @@ class HasOne(BaseType):
         related = Integer(default=lambda o: None)
         related.field_name = attribute_name
         related.model = self.model
+        related.set_default = False
         setattr(self.model, attribute_name, related)
     
     def __get__(self, obj, typeobj):

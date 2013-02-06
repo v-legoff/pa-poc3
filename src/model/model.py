@@ -162,7 +162,8 @@ class Model(metaclass=MetaModel):
         # Get the default values
         if kwargs:
             for name, field in fields.items():
-                if not field.auto_increment and not name in kwargs:
+                if not field.auto_increment and not name in kwargs and \
+                        field.set_default:
                     default = field.default
                     if default is None:
                         raise ValueError("the field {} of model {} has no " \
