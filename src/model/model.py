@@ -154,7 +154,7 @@ class Model(metaclass=MetaModel):
         This method SHOULD NOT be redefined in a subclass.
         
         """
-        fields = get_fields(type(self), register=True)
+        fields = get_fields(type(self))
         fields = dict((field.field_name, field) for field in fields)
         for name, value in kwargs.items():
             object.__setattr__(self, name, value)
