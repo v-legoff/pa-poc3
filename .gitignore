@@ -1,2 +1,2 @@
 *.pyc
-ext/aboard/tests/config
+src/tests/config

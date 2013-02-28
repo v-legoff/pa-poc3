@@ -87,9 +87,9 @@ class DataConnector:
     
     def setup_test(self):
         """Setup the data connector with test information."""
-        cfg_dir = "ext/aboard/tests/config/dc"
+        cfg_dir = "tests/config/dc"
         cfg_path = cfg_dir + "/" + self.name + ".yml"
-        def_cfg_path = "ext/aboard/dc/" + self.name + "/parameters.yml"
+        def_cfg_path = "dc/" + self.name + "/parameters.yml"
         if not os.path.exists(cfg_path):
             if not os.path.exists(cfg_dir):
                 os.makedirs(cfg_dir)

@@ -65,7 +65,7 @@ def get_name(model, bundle=True, lower=False):
     """
     name = model.__name__
     name = name.split(".")[-1]
-    if bundle:
+    if bundle and model.bundle:
         bundle_name = model.bundle.name
         name = bundle_name + "." + name
     
