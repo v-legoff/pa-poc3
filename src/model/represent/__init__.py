@@ -27,3 +27,5 @@
 
 
 """This package contains several classes used to represent DC datas."""
+
+from model.represent.dc_list import DCList
