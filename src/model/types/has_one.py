@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -26,128 +26,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the data types supported by Python Aboard.
+"""This module contains the HasOne relation field type."""
 
-Each field is defined in a class inheited from BaseType (see below).
-
-"""
-
-import copy
-
-class BaseType:
-    
-    """Class representing an abstract type of field.
-    
-    Each created field has a 'nid' attribute, which represent its identifier
-    different from all other types, no matter the field type or the model
-    in which it is defined.  This identifier is used to order the fields
-    for an object.
-    
-    """
-    
-    current_nid = 1
-    
-    @classmethod
-    def next_nid(cls):
-        nid = BaseType.current_nid
-        BaseType.current_nid += 1
-        return nid
-    
-    type_name = "undefined"
-    def __init__(self, pkey=False, default=None):
-        """The basetype field constructor."""
-        self.nid = self.next_nid()
-        self.model = None
-        self.field_name = "unknown name"
-        self.pkey = pkey
-        self.auto_increment = False
-        self.default = default
-        self.register = True
-        self.set_default = True
-        
-        if default:
-            if not callable(default):
-                # Check that the default value is accepted
-                self.accept_value(default)
-    
-    def __repr__(self):
-        return "<field {} ({})>".format(repr(self.field_name), self.nid)
-    
-    def copy(self):
-        """Return a shallow copy of self."""
-        copied = copy.copy(self)
-        copied.nid = self.next_nid()
-        return copied
-    
-    def extend(self):
-        """Extend the model if needed.
-        
-        This method is called after the copy of the new field.  That means
-        that it is connected to a model (self.model points to a class,
-        not to None) and you can use this instance attribute to extend
-        the class.
-        
-        """
-        pass
-    
-    def accept_value(self, value):
-        """Return wether this field type accept the specified value.
-        
-        For instance, a string field type will accept str Python type.
-        
-        Raise a ValueError if the value is not supported.
-        
-        """
-        raise ValueError("invalid value {} for {}.{}".format(repr(value),
-                repr(self.model), self.field_name))
-
-class Integer(BaseType):
-    
-    """Field type: integer.
-    
-    This type of field handle an integer (positive, null or negative).  It
-    DOES NOT handle floating numbers (see Float below).
-    
-    """
-    
-    type_name = "integer"
-    def __init__(self, pkey=False, auto_increment=False, default=None):
-        BaseType.__init__(self, pkey, default)
-        self.auto_increment = auto_increment
-    
-    def accept_value(self, value):
-        """Return True if this value is accepted.
-        
-        Raise a ValueError otherwise.
-        
-        """
-        if value is not None and not isinstance(value, int):
-            BaseType.accept_value(self, value)
-        
-        return True
-
-class String(BaseType):
-    
-    """Field type: string.
-    
-    This type of field handles a string of characters of different length.
-    
-    """
-    
-    type_name = "string"
-    def __init__(self, pkey=False, default=None):
-        BaseType.__init__(self, pkey, default)
-    
-    def accept_value(self, value):
-        """Return True if this value is accepted.
-        
-        Raise a ValueError otherwise.
-        
-        """
-        if not isinstance(value, str):
-            BaseType.accept_value(self, value)
-        
-        return True
+from model.types.base import BaseType
+from model.types.integer import Integer
 
 class HasOne(BaseType):
     
