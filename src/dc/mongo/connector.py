@@ -204,6 +204,9 @@ class MongoDBConnector(DataConnector):
         """Update an object."""
         self.check_update(object)
         field = getattr(type(object), attribute)
+        if not field.register:
+            return False
+        
         self.update_cache(object, field, old_value)
         name = get_name(type(object))
         m_id = self.object_ids[name][object]

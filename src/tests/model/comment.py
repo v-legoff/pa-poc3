@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the Model test and examples."""
+from model import *
 
-from tests.model.comment import Comment
-from tests.model.post import Post
-from tests.model.product import Product
-from tests.model.user import User
-
-models = [Comment, Post, Product, User]
+class Comment(Model):
+    
+    """A comment on a post."""
+    
+    post = HasOne("Post")
+    content = String()

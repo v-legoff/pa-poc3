@@ -203,7 +203,7 @@ class Model(metaclass=MetaModel):
             old_value = None
         
         if field.register and Model.data_connector and \
-                Model.data_connector.running:
+                is_built(self) and Model.data_connector.running:
             with Model.data_connector.u_lock:
                 Model.data_connector.update_object(self, attr, old_value)
     

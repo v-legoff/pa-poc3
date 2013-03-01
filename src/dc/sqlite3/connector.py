@@ -119,7 +119,7 @@ class Sqlite3Connector(DataConnector):
     
     def create_table(self, name, model):
         """Create the sqlite table related to the specified model."""
-        fields = get_fields(model)
+        fields = get_fields(model, register=True)
         sql_fields = []
         for field in fields:
             sql_field = SQLITE_TYPES[type(field)]
@@ -143,7 +143,7 @@ class Sqlite3Connector(DataConnector):
         """Return all the model's objects in a list."""
         name = get_name(model)
         plural_name = get_plural_name(model)
-        fields = get_fields(model)
+        fields = get_fields(model, register=True)
         objects = []
         query = "SELECT * FROM " + plural_name
         cursor = self.connection.cursor()
@@ -185,7 +185,7 @@ class Sqlite3Connector(DataConnector):
             raise mod_exceptions.ObjectNotFound(model, pkey_values)
         
         dict_fields = {}
-        for i, field in enumerate(get_fields(model)):
+        for i, field in enumerate(get_fields(model, register=True)):
             dict_fields[field.field_name] = row[i]
         
         object = model.build(**dict_fields)
@@ -195,7 +195,7 @@ class Sqlite3Connector(DataConnector):
     def add_object(self, object):
         """Save the object, issued from a model."""
         name = get_name(type(object))
-        fields = get_fields(type(object))
+        fields = get_fields(type(object), register=True)
         plural_name = get_plural_name(type(object))
         query = "INSERT INTO " + plural_name + " ("
         names = []
@@ -228,6 +228,9 @@ class Sqlite3Connector(DataConnector):
         self.check_update(object)
         field = getattr(type(object), attribute)
         self.update_cache(object, field, old_value)
+        if not field.register:
+            return False
+        
         plural_name = get_plural_name(type(object))
         keys = get_pkey_names(type(object))
         params = [getattr(object, attribute)]

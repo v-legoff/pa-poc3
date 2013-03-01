@@ -142,3 +142,14 @@ def update(to_update, dict_of_values):
     """Update the attributes of an object using update_attr."""
     for name, value in dict_of_values.items():
         update_attr(to_update, name, value)
+
+def is_built(object):
+    """Return whether the object is built or not.
+    
+    An object is build if its field attributes are not BaseType.
+    
+    """
+    fields = get_fields(type(object))
+    values = [getattr(object, field.field_name) for field in fields]
+    bases = [isinstance(field, BaseType) for field in values]
+    return not any(bases)

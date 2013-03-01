@@ -53,6 +53,7 @@ import os
 import yaml
 
 from model import exceptions as mod_exceptions
+from model.functions import *
 from model import Model
 from tests.model import *
 
@@ -250,3 +251,17 @@ class AbstractDCTest:
         user = User(username="Crowd")
         users = User.get_all()
         self.assertIn(user, users)
+    
+    def test_has_one(self):
+        """Test the HasOne relation.
+        
+        We try to create a post, then creates a comment bound to it.
+        
+        """
+        post = Post(title="the first blog entry", content="empty")
+        comment = Comment(post=post, content="great!")
+        self.assertIsNot(comment.post, None)
+        self.assertEqual(comment.post_id, post.id)
+        comment.post = None
+        self.assertIs(comment.post, None)
+        self.assertIs(comment.post_id, None)
