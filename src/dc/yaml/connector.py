@@ -188,7 +188,7 @@ class YAMLConnector(DataConnector):
         # Next we browse the object
         objects = []
         for object in self.objects_tree[name].values():
-            objects.append(object.__dict__)
+            objects.append(self.to_storage(object))
         
         objects.insert(0, header)
         content = yaml.dump(objects, default_flow_style=False)

@@ -32,8 +32,10 @@ import os
 import yaml
 from threading import RLock
 
+from dc.converters import *
 from model import exceptions as mod_exceptions
 from model.functions import *
+from model.types import *
 
 class DataConnector:
     
@@ -71,6 +73,11 @@ class DataConnector:
     """
     
     name = "unspecified"
+    converters = {
+        List: ListConverter,
+    }
+    
+    
     def __init__(self):
         """Initialize the data connector."""
         self.running = False
@@ -84,6 +91,35 @@ class DataConnector:
     def setup(self):
         """Setup the data connector."""
         raise NotImplementedError
+    
+    @classmethod
+    def to_storage(cls, object):
+        """Return a dictionary representing the object to save.
+        
+        This method uses the 'converters' class attribute which contains
+        a dictionary with, in key, the field types (Integer, String,
+        List, ...) and as values their corresponding formatters.  A
+        formatter can be specific to a data connector or common to all
+        data connectors.  If the field type is not in the 'converters'
+        dictionary (or if its value is None), then no converter is used.
+        
+        To learn more about converters, look at the abstract class Converter
+        in the converters/base.py file.
+        
+        """
+        # First we get the list of fields
+        fields = get_fields(type(object), register=True)
+        values = {}
+        for field in fields:
+            value = getattr(object, field.field_name)
+            type_field = type(field)
+            if cls.converters.get(type_field):
+                converter = cls.converters[type_field]
+                value = converter.to_storage(value)
+            
+            values[field.field_name] = value
+        
+        return values
     
     def setup_test(self):
         """Setup the data connector with test information."""

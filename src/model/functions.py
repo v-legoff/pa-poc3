@@ -56,6 +56,26 @@ def get_fields(model, register=False):
     
     return fields
 
+def get_fields_values(object, register=False):
+    """Return a dictionary containing the object's fields and values.
+    
+    The dictionary as the field's names as keys and the fiel's values as
+    values.
+    If the 'register' parameter is set to True, only the fields "to be
+    registered" are set.
+    
+    """
+    fields = get_fields(type(object))
+    dict_fields = {}
+    for field in fields:
+        if register and not field.register:
+            continue
+        
+        value = getattr(object, field.field_name)
+        dict_fields[field.field_name] = value
+    
+    return dict_fields
+
 def get_name(model, bundle=True, lower=False):
     """Return the model name.
     
