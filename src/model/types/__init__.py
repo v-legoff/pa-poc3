@@ -37,4 +37,4 @@ from model.types.base import BaseType
 from model.types.has_one import HasOne
 from model.types.integer import Integer
 from model.types.list import List
-from model.types.string import String
+from model.types.string_pa import String
