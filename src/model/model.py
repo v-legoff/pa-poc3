@@ -227,7 +227,6 @@ class Model(metaclass=MetaModel):
             value = getattr(self, name)
             attrs[name] = value
         
-        print(list, type(list))
         if filters is None:
             return attrs
         elif isinstance(filters, list):
