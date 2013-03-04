@@ -1,10 +1,12 @@
+import cherrypy
+
 from controller import Controller
-from bundles.auth.models.user import User as ModUser
 
 class User(Controller):
     
     def list(self):
         """Return the list of users."""
+        ModUser = self.server.get_model("auth.User")
         return self.render("auth.user.list", users=ModUser.get_all())
     
     @Controller.model_id("auth.User")
@@ -17,6 +19,7 @@ class User(Controller):
     
     def create(self, username=None, password=None):
         """Create a user."""
+        ModUser = self.server.get_model("auth.User")
         infos = {}
         if username:
             infos["username"] = username
