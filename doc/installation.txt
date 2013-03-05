@@ -1,0 +1,51 @@
+This file describes the installation process and the first execution of the
+project.
+
+===== Python installation =====
+
+Python Aboard uses the Python 3.3 version.  Visit http://www.python.org
+website to find a package for your operating system.
+
+If you wish to compile the Python version from the source code ensure that
+you have a support for open-ssl activated when you ./configure.
+
+===== Installing dependencies =====
+
+Python Aboard needs several dependencies.  You may install them directly
+using the scripts in src/tools:
+
+* First run with Python 3.3 the distribute_setup.py which should install the
+  'distribute' package
+* Then execute dependencies.py which should install the required
+  dependencies.  As this script uses the 'distribute' module, it should
+  have been installed first.
+
+This script will ask you if you want pymongo and py-postgresql.  These two
+modules are only needed if you want to store your data in a MongoDB database
+or if you want to store them with PotgreSQL.  You don't need either of them
+if you wish to use sqlite3 or yaml.
+
+Note: you can also build a virtual environment to install Python Aboard
+dependencies.  This has been tested under a Linux Gentoo and works perfectly
+well.
+
+BEWARE: in order to launch the default configuration, which includes the
+'websockets' plugin, you need the 'ws4py' package.  The most easiest way
+to install it (under Windows or Linux) is to use easy_install (which is
+installed with 'distribute'):
+
+# easy_install ws4py
+
+===== Launching the configuration example =====
+
+You can now execute the src/tools/aboard.py.  You have to specify the path
+leading to the user's configuration.  If you want to test the configuration
+example, use the example directory (provided in the repository):
+
+$ python3.3 pa-poc3/src/tools/aboard.py pa-poc3/example
+
+If everything works right, the web server should start.  By default it is
+only accessible from the local machine.  You man visit:
+
+* http://localhost:9000/users
+* http://localhost:9000/chat
