@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -26,34 +26,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Script to launch the Python Aboard server."""
+"""Package containing the 'create' default command and sub-commands.
 
-import argparse
-import os
-import sys
+The command itself is defined in the create module.
+The sub-commands are defined in sub-packages.
 
-import path
+"""
 
-from server.server import Server
-from model import Model
-from tools.console import Console
+from command.start.server.server import Server
 
-# Read the program's argument
-parser = argparse.ArgumentParser()
-parser.add_argument("user_directory",
-    help="the relative or absolute path leading to the project's directory")
-parser.add_argument("-c", "--console",
-        help="launch the interactive console", action="store_true")
-args = parser.parse_args()
-directory = args.user_directory
-server = Server(directory)
-server.load_configurations()
-server.prepare()
-server.load_bundles()
-if args.console:
-    console = Console({'server': server})
-    console.launch()
-else:
-    server.run()
-
-Model.data_connector.loop()
+COMMANDS = [
+    Server,
+]

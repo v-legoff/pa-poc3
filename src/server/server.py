@@ -84,10 +84,29 @@ class Server:
         return models
     
     def check_directory(self, directory):
-        """Check whether the directory is correct."""
+        """Check whether the directory is correct.
+        
+        A directory is not correct if:
+            It doesn't exist (surprising, hu?)
+            It doesn't contain the right repositories and files
+        
+        """
+        directories = (
+            "bundles",
+            "config",
+            "layout",
+        )
+        
         if not os.path.exists(directory):
             raise ValueError("the directory {} doesn't exist".format(
                     directory))
+        
+        existing_dirs = [name for name in os.listdir(directory) if \
+                os.path.isdir(directory + os.sep + name)]
+        for required_dir in directories:
+            if required_dir not in existing_dirs:
+                raise RuntimeError("the {} directory doesn't exist in " \
+                        "{}".format(repr(required_dir), directory))
         
         abs_directory = os.path.abspath(directory)
         sys.path.append(abs_directory)
