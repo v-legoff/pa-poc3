@@ -38,11 +38,22 @@ installed with 'distribute'):
 
 ===== Launching the configuration example =====
 
-You can now execute the src/tools/aboard.py.  You have to specify the path
-leading to the user's configuration.  If you want to test the configuration
-example, use the example directory (provided in the repository):
+You can now execute the src/aboard.py script.  In order to run, Python
+Aboard needs a path leading to the user's configuration:  this configuration
+is a directory containing a lot of informations like the bundles, the
+configuration, the static pages and so on.  This document doesn't explain
+how to create it (it's worth a whole documentation).  However, when you
+download the repository, you have with it a configuration example (in the
+'example' directory).
 
-$ python3.3 pa-poc3/src/tools/aboard.py pa-poc3/example
+You have to ways of launching Python Aboard.
+
+1. Go to the example directory
+   $ cd pa-poc3/example
+   Run the aboard.py script:
+   $ python3.3 pa-poc3/src/aboard.py start server
+2. Just exeute the same script with the '--path' option:
+   $ python3.3 pa-poc3/src/aboard.py start server --path pa-poc3/example
 
 If everything works right, the web server should start.  By default it is
 only accessible from the local machine.  You man visit:
