@@ -34,8 +34,10 @@ The sub-commands are defined in sub-packages.
 """
 
 from command.create.create import Create
+from command.create import bundle
 
 
 COMMANDS = [
     Create,
+    bundle.COMMANDS,
 ]
