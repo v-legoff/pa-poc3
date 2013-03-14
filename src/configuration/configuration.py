@@ -1,0 +1,98 @@
+# Copyright (c) 2013 LE GOFF Vincent
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# * Neither the name of the copyright holder nor the names of its contributors
+#   may be used to endorse or promote products derived from this software
+#   without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+# OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+
+"""Module containing the Configuration class, defined below."""
+
+from configuration.schema import Schema
+
+class Configuration:
+
+    """Class defining informations for a defined configuration.
+    
+    A configuration object is somewhat like a configuration file:  it
+    contains some informations that can indicate some specific datas
+    useful in a certain context.  But a Configuration object is more
+    than a configuration file, since it stores a configuration schema
+    describing what this configuration should contain.  It also specifies
+    default values to use if the file doesn't indicate the desired data.
+    
+    Each configuration has:
+        A schema (see the configuration.schema.Schema class)
+        A default file, a path leading to a default configuration file
+    
+    """
+    
+    schema = None
+    defaut_file = None
+    
+    @classmethod
+    def validate(cls, configuration):
+        """Validate a configuration.
+        
+        The configuration must be specified as a dictionary which
+        will be confronted with the schema.
+        If this method fails, an exception inherited from
+        ConfigurationError will be raised.  Otherwise, the new object
+        will be returned.
+        
+        """
+        schema = cls.schema
+        schema.validate(configuration)
+        configuration = cls()
+        configuration.datas.update(configuration)
+        return configuration
+    
+    def __init__(self):
+        """Constructor (DO NOT CALL DIRECTLY, use 'validate' instead)."""
+        self.datas = {}
+    
+    def __repr__(self):
+        return "<configuration (default={})>".format(self.default_file)
+    
+    def __str__(self):
+        datas = self.datas.copy()
+        to_display = []
+        for name, value in datas:
+            to_display.append(name + "=" + repr(value))
+        
+        return "Configuration with {}".format(", ".join(to_display))
+    
+    def __getitem__(self, data):
+        return self.datas[name]
+    
+    def __setitem__(self, data, value):
+        self.datas[name] = value
+    
+    def __contains__(self, data):
+        return data in self.datas
+    
+    def __len__(self):
+        return len(self.datas)
+    
+    def get(self, data, default=None):
+        return self.datas.get(data, default)
