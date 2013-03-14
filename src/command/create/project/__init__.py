@@ -26,20 +26,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package containing the 'create' default command and sub-commands.
+"""Package containing the 'create project' default command.
 
-The command itself is defined in the create module.
-The sub-commands are defined in sub-packages.
+The command itself is defined in the project module.
 
 """
 
-from command.create.create import Create
-from command.create import bundle
-from command.create import project
-
+from command.create.project.project import Project
 
 COMMANDS = [
-    Create,
-    bundle.COMMANDS,
-    project.COMMANDS,
+    Project,
 ]

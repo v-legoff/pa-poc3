@@ -40,10 +40,13 @@ commands.add_default_commands()
 command, args = commands.process(sys.argv[1:])
 if command:
     directory = args.path
-    server = Server(directory)
-    server.load_configurations()
-    server.prepare()
-    server.load_bundles()
+    server = Server(directory, check_dir=command.project_created)
+    if command.project_created:
+        server.load_configurations()
+        server.prepare()
+        server.load_bundles()
+    
     command.server = server
     command.execute(args)
-    Model.data_connector.loop()
+    if command.project_created:
+        Model.data_connector.loop()

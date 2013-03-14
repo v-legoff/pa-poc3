@@ -54,11 +54,15 @@ class Server:
     
     """Wrapper of a cherrypy server."""
     
-    def __init__(self, user_directory):
+    def __init__(self, user_directory, check_dir=True):
         self.host = "127.0.0.1"
         self.port = 9000
         self.hostname = "localhost"
-        self.user_directory = self.check_directory(user_directory)
+        if check_dir:
+            self.user_directory = self.check_directory(user_directory)
+        else:
+            self.user_directory = user_directory
+        
         self.cp_config = {}
         self.dispatcher = AboardDispatcher()
         self.loader = AutoLoader(self)

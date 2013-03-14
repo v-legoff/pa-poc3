@@ -64,6 +64,7 @@ class Command(metaclass=ABCMeta):
                 description=self.description,
         )
         self.children = []
+        self.project_created = True #  should the project already exist?
         
         # Add default command
         self.parser.add_argument(
