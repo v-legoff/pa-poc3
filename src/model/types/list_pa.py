@@ -51,10 +51,9 @@ class List(BaseType):
     
     type_name = "list"
     def __init__(self, contain_type, register=True):
-        BaseType.__init__(self, pkey=False, default=None)
+        BaseType.__init__(self, pkey=False, default=[])
         self.register = register
         self.contain_type = None
-        self.elements = DCList(self.model, self, [])
         if register and not contain_type:
             raise ValueError("a registered list MUST have a contain_type " \
                     "specified")
@@ -79,7 +78,8 @@ class List(BaseType):
         if obj is None:
             return self
         
-        return self.elements
+        elements = self.get_cache(obj)
+        return elements
     
     def __set__(self, obj, new_obj):
         """Try to set the related value.
@@ -87,4 +87,15 @@ class List(BaseType):
         We DO NOT change the relation, but instead modify its content.
         
         """
-        self.elements[:] = new_obj
+        elements = self.get_cache(obj)
+        elements[:] = new_obj
+    
+    def get_cache(self, obj):
+        """Return the cached list or create the DCList if needed."""
+        field = self.field_name
+        if field in obj._cache:
+            return obj._cache[field]
+        
+        elements = DCList(self.model, self, obj, [])
+        obj._cache[field] = elements
+        return elements

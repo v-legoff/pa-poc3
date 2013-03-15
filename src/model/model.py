@@ -154,6 +154,7 @@ class Model(metaclass=MetaModel):
         This method SHOULD NOT be redefined in a subclass.
         
         """
+        self._cache = {}
         fields = get_fields(type(self))
         fields = dict((field.field_name, field) for field in fields)
         for name, value in kwargs.items():
@@ -191,7 +192,12 @@ class Model(metaclass=MetaModel):
         This method checks the value type as well.
         
         """
-        field = getattr(type(self), attr)
+        try:
+            field = getattr(type(self), attr)
+        except AttributeError:
+            object.__setattr__(self, attr, value)
+            return
+        
         if isinstance(field, BaseType) and field.register:
             # Check the value type
             check = field.accept_value(value)
