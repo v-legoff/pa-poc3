@@ -26,41 +26,37 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module containing the exceptions of the configuration package.
+"""Module containing the DC (data connector) configuration."""
 
-Exception hierarchy:
-    ConfigurationError -- parent exception
-        ValidationError -- raised while validating the configuration
-            MissingData -- a required data is missing from the configuration
-            BadDataType -- a data is not of the expected type
-        MissingFile -- the configuration file can't be found or read
+from configuration import *
+from dc import connectors
 
-"""
+def find_data_connector(dictionary):
+    """Find the data connector according to the specified configuration.
 
-class ConfigurationError(RuntimeError):
+    The name has already been provided.
 
-    """Parent exception of configuration errors."""
-
-    pass
-
-class ValidationError(ConfigurationError):
-
-    """Raised when an error occured while validating the configuration."""
-
-    pass
-
-class MissingData(ValidationError):
-
-    """A configuration data is not found."""
-
-    pass
-
-class BadDataType(ValidationError):
-
-    """The data is not of the right type."""
-
-    pass
-
-class MissingFile(ConfigurationError):
-
-    """The configuration file can't be found or read."""
+    """
+    name = dictionary["dc_name"]
+    data_connector = connectors[name]
+    configuration = data_connector.configuration
+    configuration.validate(dictionary)
+    
+class DataConnectorConfiguration(Configuration):
+    
+    """Class defining the generic data connector's configuration.
+    
+    This configuration is a little complex, since each data connector has
+    different configuration parameters.  Therefore, this
+    must-remain-generic configuration just has a name and, based on this
+    name, it should be able to find the expected data connector's
+    configuration and apply it.
+    
+    The schema is defined after the 'find_data_connector' method.
+    
+    """
+    
+    schema = Schema("data_connector", definition={
+            "dc_name": Data("the data connector's name", default="yaml"),
+            "complements": find_data_connector,
+    })

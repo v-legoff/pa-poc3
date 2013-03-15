@@ -40,7 +40,7 @@ class Schema:
     used to define the structure of a configuration object (such as
     a configuration file).  Here's an example of the definition of a
     schema:
-        schema = Schema(definition={
+        schema = Schema("schema", definition={
                 "host": Data("the server's host", default="127.0.0.1"),
                 "port": Data("the server's port", type=int, default=9000),
         })
@@ -51,20 +51,21 @@ class Schema:
     
     """
     
-    def __init__(self, definition=None):
+    def __init__(self, name, definition=None):
         """Create a new schema.
         
-        The information, if specified, must be a dictionary.
+        The definition, if specified, must be a dictionary.
         
         """
-        information = information or {}
-        self.information = information
+        definition = definition or {}
+        self.name = name
+        self.definition = definition
     
     def __repr__(self):
-        return "<schema with information {}>".format(
-                repr(self.information))
+        return "<schema with definition {}>".format(
+                repr(self.definition))
     
-    def validate(self, configuration):
+    def validate(self, configuration, parent=None):
         """Try to validate the specified configuration.
         
         This configuration must be a dictionary and will be confronted
@@ -76,10 +77,37 @@ class Schema:
             Finally the one with callbacks are validated
         
         """
-        simple_datas = [name for name, value in self.information.items() if \
+        if not isinstance(configuration, dict):
+            raise BadDataType("the schema {} expects a dictionary, got {} " \
+                    "({})".format(repr(self.name), repr(configuration),
+                    type(configuration)))
+        
+        simple_datas = [name for name, value in self.definition.items() if \
                 isinstance(value, Data)]
-        other_schemas = [name for name, value in self.information.items() if \
+        other_schemas = [name for name, value in self.definition.items() if \
                 isinstance(value, Schema)]
-        callables = [name for name, value in self.information.items() if \
+        callables = [name for name, value in self.definition.items() if \
                 callable(value)]
-                
+        
+        # First validate the simple datas
+        for name in simple_datas:
+            data = self.definition[name]
+            data.name = self.name + "[" + name + "]"
+            value = configuration.get(name)
+            value = data.validate(value)
+            configuration[name] = value
+        
+        # Then validate the ssub-schemas
+        for name in other_schemas:
+            schema = self.definition[name]
+            schema.name = name + "." + schema.name
+            value = configuration.get(name, {})
+            value = schema.validate(value)
+            configuration[name] = value
+        
+        # Finally, validate the callables
+        for name in callables:
+            function = self.definition[name]
+            function(configuration)
+        
+        return configuration

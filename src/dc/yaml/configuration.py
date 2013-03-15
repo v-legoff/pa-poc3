@@ -26,41 +26,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module containing the exceptions of the configuration package.
+"""Module containing the default configuration for the 'yaml' DC."""
 
-Exception hierarchy:
-    ConfigurationError -- parent exception
-        ValidationError -- raised while validating the configuration
-            MissingData -- a required data is missing from the configuration
-            BadDataType -- a data is not of the expected type
-        MissingFile -- the configuration file can't be found or read
+from configuration import *
 
-"""
-
-class ConfigurationError(RuntimeError):
-
-    """Parent exception of configuration errors."""
-
-    pass
-
-class ValidationError(ConfigurationError):
-
-    """Raised when an error occured while validating the configuration."""
-
-    pass
-
-class MissingData(ValidationError):
-
-    """A configuration data is not found."""
-
-    pass
-
-class BadDataType(ValidationError):
-
-    """The data is not of the right type."""
-
-    pass
-
-class MissingFile(ConfigurationError):
-
-    """The configuration file can't be found or read."""
+class YAMLConfiguration(Configuration):
+    
+    """Class defining the default configuration for the yaml DC."""
+    
+    schema = Schema("yaml", definition={
+            "location": Data("the database's location, a directory",
+                    default="~/aboard/yaml"),
+    })
+    default_file = "dc/yaml/parameters.yml"

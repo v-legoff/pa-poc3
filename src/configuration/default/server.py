@@ -26,41 +26,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module containing the exceptions of the configuration package.
+"""Module containing the server configuration."""
 
-Exception hierarchy:
-    ConfigurationError -- parent exception
-        ValidationError -- raised while validating the configuration
-            MissingData -- a required data is missing from the configuration
-            BadDataType -- a data is not of the expected type
-        MissingFile -- the configuration file can't be found or read
+from configuration import *
 
-"""
-
-class ConfigurationError(RuntimeError):
-
-    """Parent exception of configuration errors."""
-
-    pass
-
-class ValidationError(ConfigurationError):
-
-    """Raised when an error occured while validating the configuration."""
-
-    pass
-
-class MissingData(ValidationError):
-
-    """A configuration data is not found."""
-
-    pass
-
-class BadDataType(ValidationError):
-
-    """The data is not of the right type."""
-
-    pass
-
-class MissingFile(ConfigurationError):
-
-    """The configuration file can't be found or read."""
+class ServerConfiguration(Configuration):
+    
+    """Class defining the server's configuration."""
+    
+    schema = Schema("server", definition={
+            "host": Data("the server's host", default="127.0.0.1"),
+            "port": Data("the server's port", type=int, default=9000),
+            "hostname": Data("the server's hostname", default="localhost"),
+    })

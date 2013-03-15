@@ -39,6 +39,7 @@ except ImportError:
 
 from dc.connector import DataConnector
 from dc import exceptions
+from dc.mongo.configuration import MongoConfiguration
 from model import exceptions as mod_exceptions
 from model.functions import *
 
@@ -58,6 +59,7 @@ class MongoDBConnector(DataConnector):
     """
     
     name = "mongo"
+    configuration = MongoConfiguration
     def __init__(self):
         """Check the driver presence.
         

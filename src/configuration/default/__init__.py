@@ -26,41 +26,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module containing the exceptions of the configuration package.
+"""Package containing the default configuration."""
 
-Exception hierarchy:
-    ConfigurationError -- parent exception
-        ValidationError -- raised while validating the configuration
-            MissingData -- a required data is missing from the configuration
-            BadDataType -- a data is not of the expected type
-        MissingFile -- the configuration file can't be found or read
-
-"""
-
-class ConfigurationError(RuntimeError):
-
-    """Parent exception of configuration errors."""
-
-    pass
-
-class ValidationError(ConfigurationError):
-
-    """Raised when an error occured while validating the configuration."""
-
-    pass
-
-class MissingData(ValidationError):
-
-    """A configuration data is not found."""
-
-    pass
-
-class BadDataType(ValidationError):
-
-    """The data is not of the right type."""
-
-    pass
-
-class MissingFile(ConfigurationError):
-
-    """The configuration file can't be found or read."""
+from configuration.default.data_connector import DataConnectorConfiguration
+from configuration.default.formats import FormatsConfiguration
+from configuration.default.server import ServerConfiguration

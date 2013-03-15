@@ -38,6 +38,7 @@ import yaml
 
 from autoloader import AutoLoader
 from bundle import Bundle
+from configuration.default import *
 from controller import Controller
 from dc import connectors
 from formatters import formats
@@ -71,6 +72,7 @@ class Server:
         self.plugin_manager = PluginManager(self)
         self.services = ServiceManager()
         self.services.register_defaults()
+        self.source_directory = ""
         self.templating_system = Jinja2(self)
         self.templating_system.setup()
         
@@ -119,11 +121,15 @@ class Server:
     def load_configurations(self):
         """This method reads the configuration files found in /config."""
         path = os.path.join(self.user_directory, "config")
-        for file_name in os.listdir(path):
-            if file_name.endswith(".yml"):
-                with open(path + "/" + file_name, "r") as file:
-                    configuration = yaml.load(file)
-                    self.configurations[file_name[:-4]] = configuration
+        configurations = {
+            "data_connector": DataConnectorConfiguration,
+            "formats": FormatsConfiguration,
+            "server": ServerConfiguration,
+        }
+        for filename, configuration in configurations.items():
+            config_path = os.path.join(path, filename + ".yml")
+            configuration = configuration.read_YAML(config_path)
+            self.configurations[filename] = configuration
     
     def prepare(self):
         """Prepare the server."""
@@ -138,7 +144,7 @@ class Server:
                 self.hostname = server["hostname"]
         
         # DataConnector configuration
-        dc_conf = self.configurations["data_connector"]
+        dc_conf = self.configurations["data_connector"].datas
         dc_name = dc_conf["dc_name"]
         dc_spec = dict(dc_conf)
         del dc_spec["dc_name"]

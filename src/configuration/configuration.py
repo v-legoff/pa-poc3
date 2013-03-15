@@ -28,6 +28,11 @@
 
 """Module containing the Configuration class, defined below."""
 
+import os
+
+import yaml
+
+from configuration.exceptions import *
 from configuration.schema import Schema
 
 class Configuration:
@@ -63,8 +68,37 @@ class Configuration:
         """
         schema = cls.schema
         schema.validate(configuration)
-        configuration = cls()
-        configuration.datas.update(configuration)
+        finale_configuration = cls()
+        finale_configuration.datas.update(configuration)
+        return finale_configuration
+    
+    @classmethod
+    def read_YAML(cls, path, must_exist=False):
+        """Read and try to build a configuration object.
+        
+        This class method tries to read the indicated file.  If the file
+        exists, it is read with 'yaml'.  If the file doesn't exist,
+        either an empty configuration object is created if the 'must_exist'
+        parameter is set to False (the default), or a MissingFile
+        exception is raised.
+        
+        """
+        configuration = {}
+        if not os.path.exists(path):
+            if must_exist:
+                raise MissingFile("the configuration file {} doesn't " \
+                        "exist".format(repr(path)))
+        elif not os.access(path, os.R_OK) and must_exist:
+            raise MissingFile("the configuration file {} cannot be " \
+                    "read".format(repr(path)))
+        elif not os.path.isfile(path):
+            raise MissingFile("the configuration file {} is not a file " \
+                    "at all".format(repr(path)))
+        else:
+            with open(path, "r") as file:
+                configuration = yaml.load(file)
+        
+        configuration = cls.validate(configuration)
         return configuration
     
     def __init__(self):
@@ -77,16 +111,16 @@ class Configuration:
     def __str__(self):
         datas = self.datas.copy()
         to_display = []
-        for name, value in datas:
+        for name, value in datas.items():
             to_display.append(name + "=" + repr(value))
         
         return "Configuration with {}".format(", ".join(to_display))
     
     def __getitem__(self, data):
-        return self.datas[name]
+        return self.datas[data]
     
     def __setitem__(self, data, value):
-        self.datas[name] = value
+        self.datas[data] = value
     
     def __contains__(self, data):
         return data in self.datas

@@ -28,6 +28,7 @@
 
 """Script to launch the Python Aboard server."""
 
+import os
 import sys
 
 from command.tree import Tree
@@ -38,10 +39,12 @@ from tools.console import Console
 commands = Tree()
 commands.add_default_commands()
 command, args = commands.process(sys.argv[1:])
+source_directory = os.path.dirname(__file__)
 if command:
     directory = args.path
     server = Server(directory, check_dir=command.project_created)
-    if command.project_created:
+    server.source_directory = source_directory
+    if command.project_created and not command.children:
         server.load_configurations()
         server.prepare()
         server.load_bundles()

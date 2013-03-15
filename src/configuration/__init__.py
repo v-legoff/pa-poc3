@@ -35,4 +35,6 @@ can, for instance, find the configuration for the used formatters in the
 """
 
 from configuration.configuration import Configuration
+from configuration.data import Data
 from configuration.exceptions import *
+from configuration.schema import Schema
