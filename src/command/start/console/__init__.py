@@ -26,19 +26,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package containing the 'create' default command and sub-commands.
+"""Package containing the 'create console' default command.
 
-The command itself is defined in the create module.
-The sub-commands are defined in sub-packages.
+The command itself is defined in the console module.
 
 """
 
-from command.start.start import Start
-from command.start import console
-from command.start import server
+from command.start.console.console import Console
 
 COMMANDS = [
-    Start,
-    console.COMMANDS,
-    server.COMMANDS,
+    Console,
 ]

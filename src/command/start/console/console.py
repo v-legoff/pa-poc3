@@ -26,19 +26,32 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package containing the 'create' default command and sub-commands.
+"""Module containing the start console default command."""
 
-The command itself is defined in the create module.
-The sub-commands are defined in sub-packages.
+from command import Command
+from tools.console import Console as ConsoleTool
 
-"""
-
-from command.start.start import Start
-from command.start import console
-from command.start import server
-
-COMMANDS = [
-    Start,
-    console.COMMANDS,
-    server.COMMANDS,
-]
+class Console(Command):
+    
+    """Command 'start console'.
+    
+    This command is useful to start a Python console.
+    
+    """
+    
+    name = "console"
+    parent = "start"
+    brief = "start a Python console"
+    description = \
+        "This command starts a Python console, very similar to the " \
+        "one you have in interactive mode with Python.  This one loads " \
+        "the user's configuration automatically, though.  The 'server' " \
+        "variable contains the Python Aboard server and from there, " \
+        "you can get the user's bundles, the defined models, the " \
+        "running services and so on."
+    
+    def execute(self, namespace):
+        """Execute the command."""
+        console = ConsoleTool({"server": self.server})
+        console.launch()
+        self.server.data_connector.loop()
