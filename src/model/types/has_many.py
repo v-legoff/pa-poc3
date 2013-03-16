@@ -28,7 +28,7 @@
 
 """This module contains the HasMany relation field type."""
 
-from model.represent import DCList
+from model.represent import DCMirror
 from model.types.base import BaseType
 from model.types.list_pa import List
 
@@ -115,13 +115,7 @@ class HasMany(BaseType):
         if obj is None:
             return self
         
-        keys = self.get_related(obj)
-        data_connector = self.model.data_connector
-        model = data_connector.models[self.related_to]
-        objects = [model.find(key) for key in keys]
         elements = self.get_cache(obj)
-        elements._elts[:] = objects
-        
         return elements
     
     def __set__(self, obj, new_obj):
@@ -140,8 +134,15 @@ class HasMany(BaseType):
             return obj._cache[field]
         
         related = self.get_related(obj)
-        elements = DCList(self.model, self, obj, [])
-        elements.neighbor = related
+        elements = DCMirror(related)
         elements.to_neighbor = get_pkey
+        elements.to_mirror = self.get_object
         obj._cache[field] = elements
         return elements
+    
+    def get_object(self, key):
+        """From a primary key, return the related object."""
+        data_connector = self.model.data_connector
+        model = data_connector.models[self.related_to]
+        mod_object = model.find(key)
+        return mod_object

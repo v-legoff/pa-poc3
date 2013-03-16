@@ -170,7 +170,7 @@ class YAMLConnector(DataConnector):
         table (as the autoincrement fields).
         
         """
-        auto_increments = datas.get("auto_increments", [])
+        auto_increments = datas.get("auto_increments", {})
         self.auto_increments[name] = auto_increments
     
     def loop(self):

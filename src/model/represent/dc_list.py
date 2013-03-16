@@ -40,23 +40,10 @@ class DCList(collections.MutableSequence):
     
     """
     
-    def transform(self, i, value):
-        """Transform the value for the neighbor, if any."""
-        if self.to_neighbor:
-            if isinstance(i, int):
-                return self.to_neighbor(value)
-            
-            return [self.to_neighbor(v) for v in value]
-        
-        return value
-    
-    def __init__(self, model, field, object, elts):
-        self._model = model
+    def __init__(self, field, object, elts):
         self._field = field
         self._elts = elts
         self._object = object
-        self.neighbor = None
-        self.to_neighbor = None
     
     def __len__(self):
         return len(self._elts)
@@ -85,34 +72,20 @@ class DCList(collections.MutableSequence):
     def add_structure(self, i, value):
         """Add the new object to the structure."""
         self.save()
-        if self.neighbor is None:
-            return
-        
-        value = self.transform(i, value)
-        self.neighbor.insert(i, value)
     
     def set_structure(self, indice_or_slice, values):
         """Set the structure."""
         self.save()
-        if self.neighbor is None:
-            return
-        
-        values = self.transform(indice_or_slice, values)
-        self.neighbor[indice_or_slice] = values
     
     def del_structure(self, indice_or_slice):
         """Del some of the structure."""
         self.save()
-        if self.neighbor is None:
-            return
-        
-        del self.neighbor[indice_or_slice]
     
     def save(self):
         """Save the list."""
         field = self._field
         field_name = field.field_name
-        model = self._model
+        model = field.model
         object = self._object
         if field.register and model.data_connector and \
                 model.data_connector.running:

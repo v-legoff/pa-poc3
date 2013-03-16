@@ -96,6 +96,6 @@ class List(BaseType):
         if field in obj._cache:
             return obj._cache[field]
         
-        elements = DCList(self.model, self, obj, [])
+        elements = DCList(self, obj, [])
         obj._cache[field] = elements
         return elements
