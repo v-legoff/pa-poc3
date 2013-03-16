@@ -34,4 +34,4 @@ then it should be placed in the data connector package itself.
 
 """
 
-from dc.converters.list import ListConverter
+from dc.converters.list_cvt import ListConverter
