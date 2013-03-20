@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -39,7 +39,12 @@ from tools.console import Console
 commands = Tree()
 commands.add_default_commands()
 command, args = commands.process(sys.argv[1:])
-source_directory = os.path.dirname(__file__)
+try:
+    source_directory = os.path.dirname(__file__)
+except NameError:
+    # __file__ does not exist, the application is frozen
+    source_directory = os.path.dirname(sys.executable)
+
 if command:
     directory = args.path
     server = Server(directory, check_dir=command.project_created)
@@ -48,7 +53,7 @@ if command:
         server.load_configurations()
         server.prepare()
         server.load_bundles()
-    
+
     command.server = server
     command.execute(args)
     if command.project_created:
