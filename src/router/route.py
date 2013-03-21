@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,55 +33,46 @@ import re
 from router.patterns import types
 
 # Constants
-RE_NAME = re.compile("^([A-Za-z]+)")
+RE_PATTERNS = re.compile(r"\{(.*?)\}")
 ALL_METHODS = ("GET", "POST", "PUT", "DELETE")
 
 class Route:
-    
+
     """A route definition for the Python Aboard dispatcher.
-    
+
     This class describes the concept of routes, which are used to
     match an URI to a corresponding callable.  When the AboardDispatcher
     receives a URI, it browses the defined routes to find one that matches
     it.  The first found one will be used and its callable will be
     called with some specific arguments.
-    
-    A route is identified by a pattern (converted to a regular
-    expression).  Parts of the route are static while others are
-    dynamic.  Consider the following example, using the regular expressions:
-        images/(\d+)
-    Here, the 'images/' is static.  For a user request to match
-    this route, it must begin by 'images/'.  Though, after that, one
-    or more numbers are expected.  Thus, the following URIs will
-    match this route:
-        images/1
-        images/28
-        images/131
-    The route 'images/' WILL NOT match it, though.
-    Note that, in practice, regular expressions are used behind the
-    scene.  The route's patterns are easier to understand and add
-    some advantages (like accept only some types of data).
-    
+
+    When a route is defined by the user, she provides the static part
+    as usal with the dynamic part between braces.  For instance:
+        /users/{id}
+    Here, '/users' is the URI's static part.  It won't change.  But the
+    '{id}' part is a pattern.  It will be converted to a special regular
+    expression.  So this route definition will be converted to:
+        '\\/users\\/(\d+)'
+
+    How a pattern ('id' in this example) is converted to a regular
+    expression is described in the 'pattern.py' file.
+
     """
-    
+
     format_dependent = False
     def __init__(self, pattern, controller, callable, methods=None):
         """Create a new route.
-        
+
         Expected parameters:
-            pattern -- the pattern representing the match [1]
+            pattern -- the pattern representing the match
             controller -- the controller (Controller object)
-            callable -- the callable which will be called if the route matches
-            methods -- a list of valid method for this route
-        
-        [1] The pattern is not a regular expression but a
-            Python-format-style string, converted into a regular expression
-            by the convert_pattern_to_re method.
-        
+            callable -- the callable called if the route matches
+            methods -- a list of valid method for this route (list of strings)
+
         """
         if pattern.endswith("/"):
             pattern = pattern[:-1]
-        
+
         self.pattern = pattern
         self.controller = controller
         self.callable = callable
@@ -89,68 +80,70 @@ class Route:
             methods = [methods]
         if methods:
             methods = tuple(name.upper() for name in methods)
-        
+
         self.methods = methods
-        self.patterns = []
         self.py_pattern = ""
-        self.re_pattern = self.convert_pattern_to_re(pattern)
-    
+        self.re_pattern = ""
+        self.matching_patterns = []
+
+
+        # Convert the pattern to a regular expression
+        self.convert_pattern(pattern)
+
     def __repr__(self):
+        methods = self.methods
+        if methods is None:
+            methods = "all"
+        else:
+            methods = ", ".join(METHODS)
+
         return "<Route to {} -> {} (methods={})>".format(
-                self.pattern, self.controller, ",".join(self.methods))
-    
+                self.pattern, self.controller, methods)
+
     def match(self, request, path):
         """Return whether or not thie path is matched by the route."""
         if self.methods and request.method.upper() not in self.methods:
             return False
-        
+
         match = self.re_pattern.search(path)
         if match:
             return match.groups()
-        
+
         return False
-    
+
     def get_path(self, *arguments):
         """Return the route with its arguments."""
         return self.py_pattern.format(*arguments)
-    
-    def convert_pattern_to_re(self, pattern):
+
+    def convert_pattern(self, pattern):
         """Return the regular expression corresponding to the specified pattern.
-        
+
         If errors are found, this method will raise specific
         exceptions inherited from PatternError.
-        
+
         """
-        re_pattern = pattern
-        py_pattern = pattern
-        pos = re_pattern.find(":")
-        while pos >= 0:
+        re_pattern = ""
+        pos = 0
+        py_pattern = ""
+        pos = 0
+        while pos is not None:
             # Get the string from pos to the end
-            sub = pattern[pos + 1:]
-            # Get the string to convert
-            r_name = RE_NAME.search(sub)
-            if not r_name:
-                raise PatternError("the pattern expression {} ends " \
-                        "with a ':' whereas an expression name is " \
-                        "expected".format(pattern))
-            
-            r_name = r_name.groups()[0]
-            
-            # Try to find the specified type
-            type = types.get(r_name)
-            if type is None:
-                raise TypeExpressionNotFound("the {} expression " \
-                        "was not found".format(repr(r_name)))
-            
-            type = type()
-            re_pattern = re_pattern[:pos] + "(" + type.regex + ")" + \
-                    re_pattern[pos + len(r_name) + 1:]
-            py_pos = py_pattern.find(":")
-            py_pattern = py_pattern[:py_pos] + "{}" + py_pattern[
-                    py_pos + len(r_name) + 1:]
-            pos = re_pattern.find(":")
-            self.patterns.append(type)
-        
+            sub = pattern[pos:]
+            pattern_match = RE_PATTERNS.search(sub)
+            if pattern_match:
+                start = pattern_match.start()
+                pos = pattern_match.end()
+                pattern_def = pattern_match.groups()[0]
+                #pattern = Pattern.find_and_create(pattern_def)
+                before = sub[:start]
+                py_pattern += before + "{}"
+                re_pattern += re.escape(before)
+                re_pattern += "\d+"
+            else:
+                pos = None
+                py_pattern += sub
+                re_pattern += sub
+
         re_pattern = "^" + re_pattern + "$"
         self.py_pattern = py_pattern
-        return re.compile(re_pattern)
+        self.re_pattern = re_pattern
