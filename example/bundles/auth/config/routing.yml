@@ -4,7 +4,7 @@ users:
   controller: auth.User.list
 
 user_view:
-  pattern: /users/:id
+  pattern: /users/{id}
   controller: auth.User.view
 
 user_new:
@@ -18,17 +18,17 @@ user_create:
   method: POST
 
 user_edit:
-  pattern: /users/:id/edit
+  pattern: /users/{id}/edit
   controller: auth.User.edit
   method: GET
 
 user_update:
-  pattern: /users/:id/edit
+  pattern: /users/{id}/edit
   controller: auth.User.update
   method: POST
 
 user_delete:
-  pattern: /users/:id/delete
+  pattern: /users/{id}/delete
   controller: auth.User.delete
 
 # Controller: login

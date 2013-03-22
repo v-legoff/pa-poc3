@@ -30,7 +30,7 @@
 
 import re
 
-from router.patterns import types
+from router.pattern.base import PatternType
 
 # Constants
 RE_PATTERNS = re.compile(r"\{(.*?)\}")
@@ -100,6 +100,20 @@ class Route:
         return "<Route to {} -> {} (methods={})>".format(
                 self.pattern, self.controller, methods)
 
+    def __call__(self, *matches, **kwargs):
+        """Call the route's callable.
+
+        This method converts the dynamic part of the URI.
+
+        """
+        matches = list(matches)
+        for i, match in enumerate(matches):
+            if match is not None:
+                pattern = self.patterns[i]
+                matches[i] = pattern.convert(match)
+
+        return self.callable(*matches, **kwargs)
+
     def match(self, request, path):
         """Return whether or not thie path is matched by the route."""
         if self.methods and request.method.upper() not in self.methods:
@@ -123,8 +137,8 @@ class Route:
 
         """
         re_pattern = ""
-        pos = 0
         py_pattern = ""
+        pattern_types = []
         pos = 0
         while pos is not None:
             # Get the string from pos to the end
@@ -134,11 +148,12 @@ class Route:
                 start = pattern_match.start()
                 pos = pattern_match.end()
                 pattern_def = pattern_match.groups()[0]
-                #pattern = Pattern.find_and_create(pattern_def)
+                pattern_type = PatternType.find_and_create(self, pattern_def)
                 before = sub[:start]
                 py_pattern += before + "{}"
                 re_pattern += re.escape(before)
-                re_pattern += "\d+"
+                re_pattern += pattern_type.full_regex
+                pattern_types.append(pattern_type)
             else:
                 pos = None
                 py_pattern += sub
@@ -146,4 +161,5 @@ class Route:
 
         re_pattern = "^" + re_pattern + "$"
         self.py_pattern = py_pattern
-        self.re_pattern = re_pattern
+        self.re_pattern = re.compile(re_pattern)
+        self.patterns = pattern_types

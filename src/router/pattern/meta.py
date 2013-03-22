@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the Controller structure.
+"""Module containing the PatternMeta metaclass, described below."""
 
-The main class, the Controller class, is defined in the ./controller.py file.
+TYPES = {}
 
-"""
+class PatternMeta(type):
 
-from controller.controller import Controller
-from controller.decorators import *
+    """Metaclass to insert the inherited classes in the TYPES dictionary."""
+
+    def __init__(cls, name, parents, attributes):
+        type.__init__(cls, name, parents, attributes)
+        if cls.name:
+            TYPES[cls.name] = cls

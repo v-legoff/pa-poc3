@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,45 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the Controller structure.
+"""This module contains decorators useful for the controller.
 
-The main class, the Controller class, is defined in the ./controller.py file.
+Provided decorators:
+    model_id -- convert the positional arguments into model objects
 
 """
 
-from controller.controller import Controller
-from controller.decorators import *
+def model_id(*names_of_model):
+    """Decorator which takes integers and convert to object.
+
+    The number of arguments should match the number of positional
+    arguments expected by the callable (the method controller).
+
+    If, for instance, the controler method is like that:
+    >>> def view(self, user):
+    Then the line just above should be something like:
+    >>> @model_id("user.User")
+
+    """
+    def decorator(function):
+        """Main wrapper."""
+        def callable_wrapper(controller, *args, **kwargs):
+            """Wrapper of the controller."""
+            # Convert the list of arguments
+            c_args = []
+            for i, arg in enumerate(args):
+                model_name = names_of_model[i]
+                if model_name:
+                    # Get the model
+                    model = controller.server.get_model(model_name)
+                    try:
+                        object = model.find(arg)
+                    except ObjectNotFound as err:
+                        return str(err)
+
+                    c_args.append(object)
+                else:
+                    c_args.append(arg)
+
+            return function(controller, *c_args, **kwargs)
+        return callable_wrapper
+    return decorator
