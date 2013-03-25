@@ -26,26 +26,22 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package containing the Python Aboard commands.
+"""Module containing the list default command."""
 
-They should be useful basically for the command-line tool which could be extended by a user's configuration.  They are arranged in a hierarchy of commands and sub-commands; For instance, here is a sample of this hierarchy:
+from command import Command
 
-aboard.py create project
-aboard.py create bundle
+class List(Command):
 
-In this example, the command 'create' has two sub-commands, 'bundle'
-and 'project' which will need different arguments and accept different
-options.
+    """Command 'list'.
 
-The mechanism behind commands is defined in the command module.  Different
-default commands are defined in separate sub-packages.
+    This command should be used as a container to list informations
+    such as sthe different bundles, routes and so on.
 
-"""
+    """
 
-from command.command import Command
-
-# First level commands
-from command import cmd_list
-from command import create
-from command import start
-
+    name = "list"
+    brief = "list specific informations"
+    description = \
+        "This command is used to list specific informations, like " \
+        "the created bundles, the available plugins, the connected " \
+        "routes and so on."

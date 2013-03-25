@@ -34,7 +34,6 @@ from router.pattern.base import PatternType
 
 # Constants
 RE_PATTERNS = re.compile(r"\{(.*?)\}")
-ALL_METHODS = ("GET", "POST", "PUT", "DELETE")
 
 class Route:
 
@@ -84,8 +83,7 @@ class Route:
         self.methods = methods
         self.py_pattern = ""
         self.re_pattern = ""
-        self.matching_patterns = []
-
+        self.patterns = []
 
         # Convert the pattern to a regular expression
         self.convert_pattern(pattern)
@@ -95,7 +93,7 @@ class Route:
         if methods is None:
             methods = "all"
         else:
-            methods = ", ".join(METHODS)
+            methods = ", ".join(methods)
 
         return "<Route to {} -> {} (methods={})>".format(
                 self.pattern, self.controller, methods)
@@ -113,6 +111,21 @@ class Route:
                 matches[i] = pattern.convert(match)
 
         return self.callable(*matches, **kwargs)
+
+    @property
+    def bundle_name(self):
+        """Return the bundle's name."""
+        return self.controller.__module__.split(".")[1]
+
+    @property
+    def controller_name(self):
+        """Return the controller's name."""
+        return self.controller.__module__.split(".")[-1]
+
+    @property
+    def action_name(self):
+        """Return the action's name."""
+        return self.callable.__name__.split(".")[-1]
 
     def match(self, request, path):
         """Return whether or not thie path is matched by the route."""

@@ -26,26 +26,38 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package containing the Python Aboard commands.
+"""Module containing the 'list routes' default command."""
 
-They should be useful basically for the command-line tool which could be extended by a user's configuration.  They are arranged in a hierarchy of commands and sub-commands; For instance, here is a sample of this hierarchy:
+from command import Command
 
-aboard.py create project
-aboard.py create bundle
+class Routes(Command):
 
-In this example, the command 'create' has two sub-commands, 'bundle'
-and 'project' which will need different arguments and accept different
-options.
+    """Command 'list routes'.
 
-The mechanism behind commands is defined in the command module.  Different
-default commands are defined in separate sub-packages.
+    This command is used to list the defined routes.
 
-"""
+    """
 
-from command.command import Command
+    name = "routes"
+    parent = "list"
+    brief = "list the defined routes"
+    description = \
+        "This command lists the defined routes."
 
-# First level commands
-from command import cmd_list
-from command import create
-from command import start
+    def execute(self, namespace):
+        """Execute the command."""
+        routes = sorted(self.server.dispatcher.routes.copy().values(),
+                key=lambda route: (route.bundle_name, route.controller_name,
+                route.action_name))
 
+        # Constitute the table
+        table = [
+            "  Pattern         | Bundle     | Controller | Action",
+        ]
+
+        for route in routes:
+            table.append("  {:<15} | {:<10} | {:<10} | {:<10} ".format(
+                    route.pattern, route.bundle_name,
+                    route.controller_name, route.action_name))
+
+        print("\n".join(table))
