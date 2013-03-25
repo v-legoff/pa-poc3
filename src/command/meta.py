@@ -26,10 +26,20 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package containing the 'create bundle' default command.
+"""This module contains the MetaCommand metaclass, described below."""
 
-The command itself is defined in the bundle module.
+COMMANDS = []
 
-"""
+class MetaCommand(type):
 
-from command.create.bundle import bundle
+    """Metaclass used by the default and user-defined commands.
+
+    This metaclass simply adds the command in the COMMANDS list if
+    it has a class attribute 'name' defined.
+
+    """
+
+    def __init__(cls, name, parents, attributes):
+        type.__init__(cls, name, parents, attributes)
+        if cls.name:
+            COMMANDS.append(cls)

@@ -1,9 +1,9 @@
 # Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,30 +34,30 @@ import shlex
 import sys
 import textwrap
 
-from abc import *
+from command.meta import MetaCommand
 
-class Command(metaclass=ABCMeta):
-    
+class Command(metaclass=MetaCommand):
+
     """Abstract class representing a command.
-    
+
     Each command should inherit from this class.
-    
+
     """
-    
+
     brief = "an unknown command to do something"
     description = "do something, I don't know what"
     name = None
     parent = None
     def __init__(self):
         """Create a new command.
-        
+
         You should indicate its name.
-        
+
         Note: it does create a new command but does not add it in a tree.  The
         'parent' class attribute is therefore not used yet.  A command without
         a tree can be processed, that is executed with some arguments
         (see the 'process' method).
-        
+
         """
         self.tree = None
         self.parser = ArgumentParser(
@@ -65,21 +65,21 @@ class Command(metaclass=ABCMeta):
         )
         self.children = []
         self.project_created = True #  should the project already exist?
-        
+
         # Add default command
         self.parser.add_argument(
                 "--path",
                 help="the path leading to the user's configuration",
                 default=os.getcwd(),
             )
-    
+
     @property
     def fullname(self):
         """Return the command's full name if the tree is set.
-        
+
         The command's full name is the name of all its successive parents.
         If no tree is set, the name of the command itself is returned.
-        
+
         """
         if self.tree is None or self.parent is None:
             return self.name
@@ -87,30 +87,30 @@ class Command(metaclass=ABCMeta):
             return self.parent + " " + self.name
         else:
             return self.parent.fullname + " " + self.name
-    
+
     def process(self, to_interpret):
         """Process the command.
-        
+
         This method expects a string or list of arguments as a parameter.  If
         a string is specified, then the module shlex (and its function
         'split') is used.  Otherwise, the list is used directly.  You can
         call this method without a tree by calling 'process' with
         sys.argv[1:] as an argument to use the parameters given to the
         command-line, for instance.
-        
+
         """
         if isinstance(to_interpret, str):
             to_interpret = shlex.split(to_interpret)
         elif not isinstance(to_interpret, list):
             raise TypeError("this function expects a list or string")
-        
+
         # Now 'to_interpret' should be a list of strings
         result = self.parser.parse_args(to_interpret)
         return self, result
-    
+
     def execute(self, namespace):
         """Method called when the command options were correctly parsed.
-        
+
         This method is automaticcaly called by the 'process' method if no
         error occured during the command parsing.  If everything goes right,
         then the 'execute' method is called with the resulting namespace
@@ -119,15 +119,15 @@ class Command(metaclass=ABCMeta):
         'execute' method is when you only need a command that acts as
         a container (that is, a command that can't be executed on
         itself, but displays the available choices to the user).
-        
+
         """
         self.display_help()
-    
+
     def display_help(self, file=sys.stdout):
         """Display the command help message.
-        
+
         You can specify a different file to print the message somewhere else than to the default output.
-        
+
         """
         message = "Command: " + self.fullname + "\n\n"
         description_lines = textwrap.wrap(self.description, width=75)
@@ -138,5 +138,5 @@ class Command(metaclass=ABCMeta):
             for command in self.children:
                 message += "\n    " + command.name
                 message += " - " + command.brief
-        
+
         print(message, file=file)
