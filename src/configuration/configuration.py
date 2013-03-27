@@ -97,6 +97,8 @@ class Configuration:
         else:
             with open(path, "r") as file:
                 configuration = yaml.load(file)
+                if not isinstance(configuration, dict):
+                    configuration = {}
 
         configuration = cls.validate(configuration)
         return configuration

@@ -85,7 +85,8 @@ class Bundle:
 
         """
         fs_root = self.server.user_directory
-        metadatas_path = os.path.join(fs_root, self.name, "bundle.yml")
+        metadatas_path = os.path.join(fs_root, "bundles", self.name,
+                "bundle.yml")
         self.meta_datas = MetadatasConfiguration.read_YAML(metadatas_path)
 
         # Check the bundle requirements
@@ -97,6 +98,7 @@ class Bundle:
                         self.name, requirement))
                 return False
 
+        print("req", self.name, required_plugins)
         for plugin_name in required_plugins:
             self.server.plugin_manager.load_plugin(loader, plugin_name)
             self.server.plugin_manager.call("extend_autoloader",
@@ -105,11 +107,10 @@ class Bundle:
                     "bundle_autoload", self, loader)
 
         # Load the bundle's configuration
-        routing_path = os.path.join(fs_root, self.name, "config",
-                "routing.yml")
+        routing_path = os.path.join(fs_root, "bundles",
+                self.name, "config", "routing.yml")
         self.routing = RoutingConfiguration.read_YAML(routing_path)
-        print(self.routing)
-
+        self.configure_routes()
         # Load (with the autoloader) the Python modules
         loader.load_modules("controller", \
                 "bundles." + self.name + ".controllers", fs_root)
@@ -135,3 +136,17 @@ class Bundle:
             })
 
         return True
+
+    def configure_routes(self):
+        """Configure the routes for this bundle."""
+        for name, informations in self.routing.datas.items():
+            pattern = informations["pattern"]
+            if not pattern.startswith("/"):
+                pattern = "/" + pattern
+
+            # Try to find the controller
+            location = informations["controller"]
+            bundle_name, controller_name, action_name = location.split(".")
+            methods = informations.get("method")
+            self.routes[name] = (pattern, controller_name, action_name,
+                    methods)

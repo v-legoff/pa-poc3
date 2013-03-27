@@ -12,13 +12,13 @@
             <% for user in users %>
             <tr>
                 <td><= user.id =></td>
-                <td><= link_to("user_view", user.id, name=user.username) =></td>
-                <td><= link_to("user_delete", user.id, name="Delete", confirm="Do you really want to del the user " ~ user.username ~ "?") =></td>
+                <td><= link_to("auth.user_view", user.id, name=user.username) =></td>
+                <td><= link_to("auth.user_delete", user.id, name="Delete", confirm="Do you really want to del the user " ~ user.username ~ "?") =></td>
             </tr>
             <% endfor %>
             </table>
         <% else %>
         <p>No user defined yet.</p>
         <% endif %>
-        <= link_to("user_new", name="Create a new user") =>
+        <= link_to("auth.user_new", name="Create a new user") =>
     <% endblock %>

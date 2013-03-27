@@ -65,6 +65,18 @@ class Schema:
         return "<schema with definition {}>".format(
                 repr(self.definition))
 
+    def get(self, name):
+        """Return the value contained in the definition.
+
+        If the name is not found though, return the first element found
+        in the definition.
+
+        """
+        try:
+            return self.definition[name]
+        except KeyError:
+            return list(self.definition.values())[0]
+
     def validate(self, configuration, parent=None):
         """Try to validate the specified configuration.
 
@@ -103,7 +115,7 @@ class Schema:
 
         # Then validate the ssub-schemas
         for name in other_schemas:
-            schema = self.definition[name]
+            schema = self.get(name)
             schema.name = name + "." + schema.name
             value = configuration.get(name, {})
             value = schema.validate(value)
@@ -130,3 +142,4 @@ class Schema:
                 others = [key for key in others if key not in \
                         datas and key not in schemas and key not in callables]
                 schemas.extend(others)
+                schemas.remove("*")
