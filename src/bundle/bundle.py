@@ -98,7 +98,6 @@ class Bundle:
                         self.name, requirement))
                 return False
 
-        print("req", self.name, required_plugins)
         for plugin_name in required_plugins:
             self.server.plugin_manager.load_plugin(loader, plugin_name)
             self.server.plugin_manager.call("extend_autoloader",

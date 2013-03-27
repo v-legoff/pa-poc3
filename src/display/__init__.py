@@ -26,48 +26,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module containing the 'list routes' default command."""
+"""Package used to store modules built to display or render."""
 
-from command import Command
 from display.table import Table
-
-class Routes(Command):
-
-    """Command 'list routes'.
-
-    This command is used to list the defined routes.
-
-    """
-
-    name = "routes"
-    parent = "list"
-    brief = "list the defined routes"
-    description = \
-        "This command lists the defined routes."
-
-    def __init__(self):
-        Command.__init__(self)
-        self.parser.add_argument("-m", "--methods", action="store_true",
-                help="display the HTTP methods for each route")
-
-    def execute(self, namespace):
-        """Execute the command."""
-        routes = sorted(self.server.dispatcher.routes.copy().values(),
-                key=lambda route: (route.bundle_name, route.controller_name,
-                route.action_name))
-
-        # Constitute the table
-        table = Table("Pattern", "Bundle", "Controller", "Action",
-                left_border="  ", right_border="")
-
-        if namespace.methods:
-            table.add_column("Methods")
-
-        for route in routes:
-            row = table.add_row(route.pattern, route.bundle_name,
-                    route.controller_name, route.action_name)
-
-            if namespace.methods:
-                row.set("Methods", route.pretty_methods)
-
-        print(table)

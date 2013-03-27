@@ -81,6 +81,9 @@ class Route:
             methods = tuple(name.upper() for name in methods)
 
         self.methods = methods
+        self.bundle = None
+        self.controller_name = ""
+        self.action_name = ""
         self.py_pattern = ""
         self.re_pattern = ""
         self.patterns = []
@@ -89,12 +92,7 @@ class Route:
         self.convert_pattern(pattern)
 
     def __repr__(self):
-        methods = self.methods
-        if methods is None:
-            methods = "all"
-        else:
-            methods = ", ".join(methods)
-
+        methods = self.pretty_methods
         return "<Route to {} -> {} (methods={})>".format(
                 self.pattern, self.controller, methods)
 
@@ -115,17 +113,18 @@ class Route:
     @property
     def bundle_name(self):
         """Return the bundle's name."""
-        return self.controller.__module__.split(".")[1]
+        return self.bundle and self.bundle.name or ""
 
     @property
-    def controller_name(self):
-        """Return the controller's name."""
-        return self.controller.__module__.split(".")[-1]
+    def pretty_methods(self):
+        """Return a string representing the methods."""
+        methods = self.methods
+        if methods is None:
+            methods = "all"
+        else:
+            methods = ", ".join(methods)
 
-    @property
-    def action_name(self):
-        """Return the action's name."""
-        return self.callable.__name__.split(".")[-1]
+        return methods
 
     def match(self, request, path):
         """Return whether or not thie path is matched by the route."""

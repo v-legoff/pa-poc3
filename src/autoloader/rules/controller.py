@@ -74,9 +74,12 @@ class ControllerRule(Rule):
                 class_name]
         for route, (pattern, ctl_name, action, methods) in routes:
             route_name = bundle_name + "." + route
-            action = getattr(ctl_object, action)
-            self.server.dispatcher.add_route(route_name, pattern, ctl_object,
-                    action, methods)
+            function = getattr(ctl_object, action)
+            route = self.server.dispatcher.add_route(
+                    route_name, pattern, ctl_object, function, methods)
+            route.bundle = bundle
+            route.controller_name = class_name
+            route.action_name = action
 
         return ctl_object
 
