@@ -1,1 +1,1 @@
-plugins: [ websocket ]
+required_plugins: [ websocket ]

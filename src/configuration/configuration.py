@@ -1,9 +1,9 @@
 # Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -38,50 +38,50 @@ from configuration.schema import Schema
 class Configuration:
 
     """Class defining informations for a defined configuration.
-    
+
     A configuration object is somewhat like a configuration file:  it
     contains some informations that can indicate some specific datas
     useful in a certain context.  But a Configuration object is more
     than a configuration file, since it stores a configuration schema
     describing what this configuration should contain.  It also specifies
     default values to use if the file doesn't indicate the desired data.
-    
+
     Each configuration has:
         A schema (see the configuration.schema.Schema class)
         A default file, a path leading to a default configuration file
-    
+
     """
-    
+
     schema = None
     defaut_file = None
-    
+
     @classmethod
     def validate(cls, configuration):
         """Validate a configuration.
-        
+
         The configuration must be specified as a dictionary which
         will be confronted with the schema.
         If this method fails, an exception inherited from
         ConfigurationError will be raised.  Otherwise, the new object
         will be returned.
-        
+
         """
         schema = cls.schema
         schema.validate(configuration)
         finale_configuration = cls()
         finale_configuration.datas.update(configuration)
         return finale_configuration
-    
+
     @classmethod
     def read_YAML(cls, path, must_exist=False):
         """Read and try to build a configuration object.
-        
+
         This class method tries to read the indicated file.  If the file
         exists, it is read with 'yaml'.  If the file doesn't exist,
         either an empty configuration object is created if the 'must_exist'
         parameter is set to False (the default), or a MissingFile
         exception is raised.
-        
+
         """
         configuration = {}
         if not os.path.exists(path):
@@ -97,36 +97,40 @@ class Configuration:
         else:
             with open(path, "r") as file:
                 configuration = yaml.load(file)
-        
+
         configuration = cls.validate(configuration)
         return configuration
-    
+
     def __init__(self):
         """Constructor (DO NOT CALL DIRECTLY, use 'validate' instead)."""
         self.datas = {}
-    
+
     def __repr__(self):
         return "<configuration (default={})>".format(self.default_file)
-    
+
     def __str__(self):
         datas = self.datas.copy()
         to_display = []
         for name, value in datas.items():
             to_display.append(name + "=" + repr(value))
-        
+
         return "Configuration with {}".format(", ".join(to_display))
-    
+
     def __getitem__(self, data):
         return self.datas[data]
-    
+
     def __setitem__(self, data, value):
         self.datas[data] = value
-    
+
     def __contains__(self, data):
         return data in self.datas
-    
+
     def __len__(self):
         return len(self.datas)
-    
+
     def get(self, data, default=None):
-        return self.datas.get(data, default)
+        data = self.datas.get(data, default)
+        if data is None:
+            return default
+
+        return data

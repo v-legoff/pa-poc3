@@ -124,6 +124,7 @@ class Server:
             "formats": FormatsConfiguration,
             "server": ServerConfiguration,
         }
+
         for filename, configuration in configurations.items():
             config_path = os.path.join(path, filename + ".yml")
             configuration = configuration.read_YAML(config_path)
