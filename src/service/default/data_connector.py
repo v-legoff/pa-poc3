@@ -26,50 +26,44 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module containing the UserProviderService class.
+"""Module containing the DataConnectorService class.
 
-This class contains the user_provider service, specifically used to
-retrieve users.  This service also handles the creation or retrieving of
-the 'anonymous' user.
+This class contains the data_connector service, used to
+manipulate the configured data connector.  It should only perform generic
+actions (actions that are common to EVERY defined data connectors).
 
 """
 
-from model.exceptions import ObjectNotFound
 from service import Service
 
-class UserProviderService(Service):
+class DataConnectorService(Service):
 
-    """Class containing the user_provider service.
+    """Class containing the data_connector service.
 
-    This service is used to:
-    *  Retrieve already created users stored in the data connector
-    *  Retrieve (or create if needed) the anonymous user.
-
-    Required configuration informations:
-        model_name -- the model's name containing the users
-        method_to_retrieve -- method used to retrieve users
-
-    Methods you can use:
-        find_user -- find an user
+    This service is basically used to manipulate the defined data
+    connector.  It can be used when a data connector has been configured.
+    The Python Aboard's server automatically configure this service,
+    but if you don't want to use the server at all, you should do
+    something like:
+    >>> # Import a data connector (here the YAMLConnector)
+    >>> from dc.yaml.connector import YAMLConnector
+    >>> data_connector = YAMLConnector()
+    >>> data_connector.setup(location="~/aboard")
+    >>> # Import the service manager
+    >>> from service import manager
+    >>> manager.load_default_services()
+    >>> manager["data_connector"].data_connector = data_connector
 
     """
 
-    name = "user_provider"
-    model_name = "user.User"
-    method_to_retrieve = "find"
+    name = "data_connector"
+    data_connector = None
 
-    def find_user(self, key):
-        """Return the found users or None if no one found."""
-        data_connector = self.services.data_connector
-        try:
-            model = data_connector.get_model(self.model_name)
-        except KeyError:
-            return None
+    def get_model(self, model_name):
+        """Return, if found, the model.
 
-        try:
-            method = getattr(model, self.method_to_retrieve)
-            user = method(key)
-        except ObjectNotFound:
-            return None
+        The name should be "bundle.model" like "blog.Post".
+        If the model cannot be found, a KeyError exception will be raised.
 
-        return user
+        """
+        return self.data_connector.models[model_name]

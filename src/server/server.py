@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -47,14 +47,13 @@ from model import Model
 from plugin.manager import PluginManager
 from router.dispatcher import AboardDispatcher
 from server.plugins.reloader import Reloader
-from service import Service
-from service.manager import ServiceManager
+from service import manager
 from templating import Jinja2
 
 class Server:
-    
+
     """Wrapper of a cherrypy server."""
-    
+
     def __init__(self, user_directory, check_dir=True):
         self.host = "127.0.0.1"
         self.port = 9000
@@ -63,61 +62,60 @@ class Server:
             self.user_directory = self.check_directory(user_directory)
         else:
             self.user_directory = user_directory
-        
+
         self.cp_config = {}
         self.dispatcher = AboardDispatcher()
         self.loader = AutoLoader(self)
         self.bundles = {}
         self.configurations = {}
         self.plugin_manager = PluginManager(self)
-        self.services = ServiceManager()
+        self.services = manager
         self.services.register_defaults()
         self.source_directory = ""
         self.templating_system = Jinja2(self)
         self.templating_system.setup()
-        
+
         Controller.server = self
         Formatter.server = self
-        Service.server = self
-    
+
     @property
     def models(self):
         """Return all the models."""
         models = []
         for bundle in self.bundles.values():
             models.extend(list(bundle.models.values()))
-        
+
         return models
-    
+
     def check_directory(self, directory):
         """Check whether the directory is correct.
-        
+
         A directory is not correct if:
             It doesn't exist (surprising, hu?)
             It doesn't contain the right repositories and files
-        
+
         """
         directories = (
             "bundles",
             "config",
             "layout",
         )
-        
+
         if not os.path.exists(directory):
             raise ValueError("the directory {} doesn't exist".format(
                     directory))
-        
+
         existing_dirs = [name for name in os.listdir(directory) if \
                 os.path.isdir(directory + os.sep + name)]
         for required_dir in directories:
             if required_dir not in existing_dirs:
                 raise RuntimeError("the {} directory doesn't exist in " \
                         "{}".format(repr(required_dir), directory))
-        
+
         abs_directory = os.path.abspath(directory)
         sys.path.append(abs_directory)
         return abs_directory
-    
+
     def load_configurations(self):
         """This method reads the configuration files found in /config."""
         path = os.path.join(self.user_directory, "config")
@@ -130,7 +128,7 @@ class Server:
             config_path = os.path.join(path, filename + ".yml")
             configuration = configuration.read_YAML(config_path)
             self.configurations[filename] = configuration
-    
+
     def prepare(self):
         """Prepare the server."""
         # Update the server's host and port
@@ -142,7 +140,7 @@ class Server:
                 self.port = server["port"]
             if "hostname" in server:
                 self.hostname = server["hostname"]
-        
+
         # DataConnector configuration
         dc_conf = self.configurations["data_connector"].datas
         dc_name = dc_conf["dc_name"]
@@ -153,34 +151,35 @@ class Server:
         except KeyError:
             print("Unknown data connector {}".format(dc_name))
             return
-        
+
         dc = dc()
         dc.setup(**dc_spec)
         dc.running = True
         Model.data_connector = dc
-        
+        self.services.services["data_connector"].data_connector = dc
+
         if "formats" not in self.configurations:
             return
         cfg_formats = self.configurations["formats"]
-        
+
         # Setup the default_format
         default = cfg_formats["default_format"].lower()
         if default not in formats:
             raise ValueError("unknown format {}".format(default))
-        
+
         allowed_formats = []
         for format in cfg_formats.get("allowed_formats", []):
             format = format.lower()
             if format not in formats:
                 raise ValueError("unknown format {}".format(format))
-            
+
             allowed_formats.append(format)
-        
+
         self.data_connector = dc
         self.default_format = default
         self.allowed_formats = allowed_formats
         self.loader.add_default_rules()
-    
+
     def load_bundles(self):
         """Load the user's bundles."""
         path = os.path.join(self.user_directory, "bundles")
@@ -190,7 +189,7 @@ class Server:
                 self.bundles[name] = bundle
         for bundle in self.bundles.values():
             bundle.setup(self, self.loader)
-    
+
     def run(self):
         """Run the server."""
         cherrypy.engine.autoreload.unsubscribe()
@@ -215,27 +214,27 @@ class Server:
                 },
             },
         })
-        
+
         # Some plugins add configuration
         self.plugin_manager.call("extend_server_configuration", cherrypy.engine, config)
         cherrypy.tree.mount(root=self.dispatcher, config=config)
         cherrypy.engine.start()
         cherrypy.engine.block()
-    
+
     def get_model(self, name):
         """Try and retrieve a Model class."""
         bundle_name, model_name = name.split(".")
         bundle = self.bundles[bundle_name]
         model = bundle.models[name]
         return model
-    
+
     def get_cookie(self, name, value=None):
         """Get the cookie and return its value or 'value' if not found."""
         try:
             return cherrypy.request.cookie[name].value
         except KeyError:
             return value
-    
+
     def set_cookie(self, name, value, max_age, path="/", version=1):
         """Set a cookie."""
         cookie = cherrypy.response.cookie
@@ -243,19 +242,19 @@ class Server:
         cookie[name]['path'] = path
         cookie[name]['max-age'] = max_age
         cookie[name]['version'] = 1
-    
+
     def authenticated(self):
         """Return whether the current request is authenticated or not."""
         client_token = self.get_cookie("PA-client-token")
         if not client_token:
             print("no cookie")
             return False
-        
+
         headers = cherrypy.request.headers
         if "Remote-Addr" not in headers:
             print("no IP")
             return False
-        
+
         to_hash = "Python-Aboard " + headers.get("Remote-Addr", "none")
         to_hash += " " + headers.get("User-Agent", "unknown")
         to_hash = to_hash.encode()
