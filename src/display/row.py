@@ -49,6 +49,14 @@ class Row:
 
         return datas
 
+    def get_tuple(self, *columns):
+        """Return a tuple containing the required datas."""
+        datas = []
+        for name in columns:
+            datas.append(self.named_datas.get(name, ""))
+
+        return tuple(datas)
+
     def set(self, name, value):
         """Set the column."""
         if name not in self.table.columns:

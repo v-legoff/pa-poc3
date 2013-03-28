@@ -123,3 +123,25 @@ class Table:
             lines.append(line_format.format(*row.datas))
 
         return "\n".join(lines)
+
+    def sort_by(self, *columns):
+        """Sort by the specified columns.
+
+        The columns should be specified using their names.  If you
+        create a table with the columns "first name" and "name" for
+        instance, you can use .sort_by("name") to sort the lines by
+        the 'name' column.  You can specify multiple column names like:
+        >>> table = Table("first name", "name", "job")
+        >>> # Add several rows...
+        >>> table.sort_by("name", "first name") #  will sort by name and then first name
+
+        """
+        indices = []
+        for column in columns:
+            if column in self.columns:
+                indices.append(self.columns.index(column))
+            else:
+                raise ValueError("the column {} is not present in this " \
+                        "table".format(repr(column)))
+
+        self.rows.sort(key=lambda row: row.get_tuple(*columns))

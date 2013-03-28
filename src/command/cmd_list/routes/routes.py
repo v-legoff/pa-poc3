@@ -49,6 +49,8 @@ class Routes(Command):
         Command.__init__(self)
         self.parser.add_argument("-m", "--methods", action="store_true",
                 help="display the HTTP methods for each route")
+        self.parser.add_argument("-P", "--sort-by-pattern",
+                action="store_true", help="sort the lines by pattern")
 
     def execute(self, namespace):
         """Execute the command."""
@@ -69,5 +71,11 @@ class Routes(Command):
 
             if namespace.methods:
                 row.set("Methods", route.pretty_methods)
+
+        if namespace.sort_by_pattern:
+            if namespace.methods:
+                table.sort_by("Pattern", "Methods")
+            else:
+                table.sort_by("Pattern")
 
         print(table)
