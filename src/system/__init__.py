@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,31 +26,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Script to launch the Python Aboard server."""
+"""Package containing the generic operating system functions.
+
+Sub-modules:
+    functions -- the operatng system functions
+
+"""
 
 import os
-import sys
 
-from command.tree import Tree
-from server.server import Server
-from model import Model
-from system import *
-from tools.console import Console
+from system.functions import *
 
-commands = Tree()
-commands.add_default_commands()
-command, args = commands.process(sys.argv[1:])
-source_directory = get_source_directory()
-if command:
-    directory = args.path
-    server = Server(directory, check_dir=command.project_created)
-    server.source_directory = source_directory
-    if command.project_created and not command.children:
-        server.load_configurations()
-        server.prepare()
-        server.load_bundles()
-
-    command.server = server
-    command.execute(args)
-    if command.project_created:
-        Model.data_connector.loop()
+if os.name == "nt":
+    from system.windows.functions import *

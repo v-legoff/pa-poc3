@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,31 +26,28 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Script to launch the Python Aboard server."""
+"""Module containing the Windows operating system functions.
+
+Functions defined in this module:
+    is_PID_running(pid) -- return whether the process is running
+    stop_process(PID)
+
+"""
 
 import os
-import sys
 
-from command.tree import Tree
-from server.server import Server
-from model import Model
-from system import *
-from tools.console import Console
+def is_process_running(pid):
+    """Return whether the process is running or not."""
+    cmd = "tasklist /FI \"PID eq {pid}\" 2> NUL " \
+            "| find /I /N \"{pid}\" > NUL"
+    ret = os.system(cmd.format(pid=pid))
+    return ret == 0
 
-commands = Tree()
-commands.add_default_commands()
-command, args = commands.process(sys.argv[1:])
-source_directory = get_source_directory()
-if command:
-    directory = args.path
-    server = Server(directory, check_dir=command.project_created)
-    server.source_directory = source_directory
-    if command.project_created and not command.children:
-        server.load_configurations()
-        server.prepare()
-        server.load_bundles()
+def stop_process(pid):
+    """Abrupty stop the process based on its PID.
 
-    command.server = server
-    command.execute(args)
-    if command.project_created:
-        Model.data_connector.loop()
+    This command is not really gentle.  The process is stopped, but
+    rather abruptly and without warning.
+
+    """
+    os.system("taskkill /PID {} /F > NUL 2> NUL".format(pid))

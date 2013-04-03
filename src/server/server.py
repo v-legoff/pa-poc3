@@ -194,10 +194,14 @@ class Server:
     def run(self):
         """Run the server."""
         cherrypy.engine.autoreload.unsubscribe()
-        cherrypy.engine.reloader = Reloader(cherrypy.engine)
-        cherrypy.engine.reloader.loader = self.loader
-        cherrypy.engine.reloader.server = self
-        cherrypy.engine.reloader.subscribe()
+        if hasattr(cherrypy.engine, 'signal_handler'):
+            cherrypy.engine.signal_handler.subscribe()
+        if hasattr(cherrypy.engine, "console_control_handler"):
+            cherrypy.engine.console_control_handler.subscribe()
+        #cherrypy.engine.reloader = Reloader(cherrypy.engine)
+        #cherrypy.engine.reloader.loader = self.loader
+        #cherrypy.engine.reloader.server = self
+        #cherrypy.engine.reloader.subscribe()
         cherrypy.config.update({
                 'server.socket_host': self.host,
                 'server.socket_port': self.port,
@@ -219,8 +223,10 @@ class Server:
         # Some plugins add configuration
         self.plugin_manager.call("extend_server_configuration", cherrypy.engine, config)
         cherrypy.tree.mount(root=self.dispatcher, config=config)
+        self.write_PID()
         cherrypy.engine.start()
         cherrypy.engine.block()
+        self.del_PID()
 
     def get_model(self, name):
         """Try and retrieve a Model class."""
@@ -228,6 +234,25 @@ class Server:
         bundle = self.bundles[bundle_name]
         model = bundle.models[name]
         return model
+
+
+    def write_PID(self):
+        """Write the PID (os.pid) in the user's directory configuration."""
+        path = os.path.join(self.user_directory, "tmp")
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        pid = os.getpid()
+        pid_path = os.path.join(path, "pid")
+        with open(pid_path, "w") as pid_file:
+            pid_file.write(str(pid))
+
+    def del_PID(self):
+        """Delete the file containing the server's PID."""
+        path = os.path.join(self.user_directory, "tmp")
+        if os.path.exists(path):
+            pid_path = os.path.join(path, "pid")
+            os.remove(pid_path)
 
     def get_cookie(self, name, value=None):
         """Get the cookie and return its value or 'value' if not found."""
