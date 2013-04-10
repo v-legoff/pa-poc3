@@ -19,6 +19,7 @@ setup(
     },
     executables = [
         Executable('aboard.py'),
-        Executable('winservice.py'),
-    ]
+        #Executable('winservice.py', base="Win32Service"),
+        Executable("winservice.py", base="Win32Service", targetName="paservice.exe")
+    ],
 )

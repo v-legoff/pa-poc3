@@ -1,9 +1,9 @@
 # Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,56 +29,65 @@
 """Module containing the base class Rule."""
 
 class Rule:
-    
+
     """This is an astract class, rules should inherit from it.
-    
+
     Any rule could need some specific informations in the constructor.
     For instance, the ModelRule will need the DataConnector object to
     communicate with the data connector, retrieve and store datas.  Those
     needs are different from rule to rule, though, and the autoloader
     deduces each rule's needed parameters by inspecting its
     constructor.
-    
+
     Some other methods are used to load or reload modules with this rule:
         load -- load a specific module
         unload -- unload a specific module
-    
+
     """
-    
+
     @staticmethod
     def module_name(module):
         """Return the module name.
-        
+
         We use the __name__ attribute of the module, but we
         select only the last one of the path.
-        
+
         """
         return module.__name__.split(".")[-1]
-    
+
     @staticmethod
     def bundle_name(module):
         """Return the bundle name.
-        
+
         The first part of the path should be "bundles".  The next
         part is the bundle's name.
-        
+
         """
         return module.__name__.split(".")[1]
-    
+
+    @staticmethod
+    def find_class(module, base):
+        """Find the class inherited from base in the specified module."""
+        for name, element in module.__dict__:
+            if isinstance(element, base):
+                return element
+
+        raise ValueError("the class wasn't found")
+
     def load(self, module):
         """Load a specific module.
-        
+
         This method should return what is needed after this import.
         Perhaps the module itself, but more likely something contained
         in it.
-        
+
         """
         raise NotImplementedError
-    
+
     def unload(self, module):
         """Unload the specific module.
-        
+
         By default, nothing is done.
-        
+
         """
         pass

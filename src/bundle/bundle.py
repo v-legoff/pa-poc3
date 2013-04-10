@@ -61,6 +61,7 @@ class Bundle:
         self.meta_data = None
         self.controllers = {}
         self.models = {}
+        self.repositories = {}
         self.views = {}
         self.routes = {}
 
@@ -110,9 +111,12 @@ class Bundle:
                 self.name, "config", "routing.yml")
         self.routing = RoutingConfiguration.read_YAML(routing_path)
         self.configure_routes()
+
         # Load (with the autoloader) the Python modules
         loader.load_modules("controller", \
                 "bundles." + self.name + ".controllers", fs_root)
+        loader.load_modules("repository", "bundles." + self.name + \
+                ".repositories", fs_root)
         loader.load_modules("model", "bundles." + self.name + ".models",
                 fs_root)
         loader.load_modules("service", "bundles." + self.name + ".services",

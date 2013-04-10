@@ -26,37 +26,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package containing the autoloader rules.
+"""Package containing the default logic for a repository."""
 
-A rule is a sub-class of Rule, defined in the base module.
-Each rule defines some default behaviour when a module is loaded
-or reloaded.
-
-For instance, when a module containing a Controller is loaded / reloaded:
-    The Controller class should be extracted ffrom the module
-    The previously selected class should be instanciated
-    The controller should be bound with a bundle
-    Finally, it should know what is the running server.
-
-This behavior is defined in a sub-class of Rule and is exactly the same whether the
-module is loaded the first time or reloaded to upgrade the source code.
-
-The default rules are contained in the DEFAULT dictionary.  If you want
-to add a new rule, create its module in this package and import it in
-here.  Don't forget to add it in the DEFAULT dictionary as well.
-
-"""
-
-from autoloader.rules.controller import ControllerRule
-from autoloader.rules.model import ModelRule
-from autoloader.rules.plugin import PluginRule
-from autoloader.rules.repository import RepositoryRule
-from autoloader.rules.service import ServiceRule
-
-DEFAULT = {
-    "controller": ControllerRule,
-    "model": ModelRule,
-    "plugin": PluginRule,
-    "repository": RepositoryRule,
-    "service": ServiceRule,
-}
+from repository.repository import Repository

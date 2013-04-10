@@ -26,61 +26,57 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module containing the ModelRule class."""
+"""Module containing the RepositoryRule class."""
 
 from autoloader.rules.base import Rule
-from model.functions import get_name
 from repository import Repository
 
-class ModelRule(Rule):
+class RepositoryRule(Rule):
 
-    """Class defining the autoloader rule to import models.
+    """Class defining the autoloader rule to import repositories.
 
-    The models are module containing a class.  This class will be
-    returned after importing the module.  Plus, this rule should:
-    -   Try to find the corresponding repository and, if not found,
-        create a default one
-    -   Register the model in the proper bundle.
+    The repositories are module containing a class.  This class will be
+    returned after importing the module.  The repository should be
+    saved in the bundle and will be used afterwards.
 
     """
 
-    def __init__(self, server, data_connector):
+    def __init__(self, server):
         self.server = server
-        self.data_connector = data_connector
+
+    @staticmethod
+    def get_model_name(rep_class):
+        """Return the model's name defined in the class.
+
+        If the 'model_name' class attribute is set, return it.
+        Otherwise, return the class name.
+
+        """
+        if hasattr(rep_class, "model_name"):
+            return rep_class.model_name
+
+        full_name = rep_class.__name__
+        name = full_name.split(".")[-1]
+        if name.endswith("Repository"):
+            name = name[:-10]
+
+        return name
 
     def load(self, module):
         """Load a specific module.
 
         This method:
-            Get the Model class defined in the module
-            Try to find the corresponding repository
-            Write this dclass in the model's bundle
+            Get the Repository class defined in the module
+            Write this class in the bundle's repositories
             Return the class
 
         """
         name = Rule.module_name(module)
         bundle_name = Rule.bundle_name(module)
         bundle = self.server.bundles[bundle_name]
-        class_name = name.capitalize()
-        mod_class = getattr(module, class_name)
-        mod_class.bundle = bundle
-        mod_name = get_name(mod_class)
-
-        # Try to find the corresponding repository
-        if mod_name in bundle.repositories:
-            rep_class = bundle.repositories[mod_name]
-            print("Found the repository", rep_class)
-        else:
-            rep_class = Repository
-            print("Create a new repository")
-
-        repository = rep_class(self.data_connector, mod_class)
-        mod_class._repository = repository
+        rep_class = Rule.find_class(module, Repository)
 
         # Write the class in the bundles
-        bundle.models[mod_name] = mod_class
-
-        # Record the new bundle in the data connector
-        self.data_connector.record_model(mod_class)
-
-        return mod_class
+        model_name = self.get_model_name(rep_class)
+        bundle.repositories[model_name] = rep_class
+        return rep_class
