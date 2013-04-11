@@ -32,6 +32,7 @@ from collections import OrderedDict
 
 from model import Model
 from model.functions import *
+from query import Query
 
 class Repository:
 
@@ -140,3 +141,8 @@ class Repository:
         """Delete the object in the data connector."""
         with self.data_connector.u_lock:
             self.data_connector.remove_object(model_object)
+
+    def query(self):
+        """Return a new empty query."""
+        query = Query(self.data_connector, self.model)
+        return query

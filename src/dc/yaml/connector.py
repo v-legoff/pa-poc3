@@ -248,3 +248,22 @@ class YAMLConnector(DataConnector):
         self.uncache_object(object)
         name = get_name(type(object))
         self.to_update.add(name)
+
+    def query(self, query):
+        model = query.first_model
+        name = get_name(model)
+        objects = list(self.objects_tree.get(name, {}).values())
+
+        # Add simple filters
+        operators = {
+            "=": lambda a, b: a == b,
+        }
+
+        for filter in query.filters:
+            py_lambda = operators[filter.operator.name]
+            field = filter.field
+            parameter = filter.parameter
+            objects = [model_object for model_object in objects if \
+                    py_lambda(getattr(model_object, field), parameter)]
+
+        return objects
