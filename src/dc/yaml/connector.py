@@ -40,6 +40,7 @@ except ImportError:
 from dc.connector import DataConnector
 from dc import exceptions
 from dc.yaml.configuration import YAMLConfiguration
+from dc.yaml.query_manager import YAMLQueryManager
 from model import exceptions as mod_exceptions
 from model.functions import *
 
@@ -100,6 +101,7 @@ class YAMLConnector(DataConnector):
                     "cannot write in {}".format(location))
 
         DataConnector.__init__(self)
+        self.query_manager = YAMLQueryManager(self)
         self.location = location
         self.files = {}
 
@@ -248,22 +250,3 @@ class YAMLConnector(DataConnector):
         self.uncache_object(object)
         name = get_name(type(object))
         self.to_update.add(name)
-
-    def query(self, query):
-        model = query.first_model
-        name = get_name(model)
-        objects = list(self.objects_tree.get(name, {}).values())
-
-        # Add simple filters
-        operators = {
-            "=": lambda a, b: a == b,
-        }
-
-        for filter in query.filters:
-            py_lambda = operators[filter.operator.name]
-            field = filter.field
-            parameter = filter.parameter
-            objects = [model_object for model_object in objects if \
-                    py_lambda(getattr(model_object, field), parameter)]
-
-        return objects

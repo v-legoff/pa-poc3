@@ -65,6 +65,10 @@ class Repository:
         self.data_connector = data_connector
         self.model = model
 
+    def __repr__(self):
+        model = get_name(self.model, bundle=True)
+        return "<Repository of the {} model class>".format(repr(model))
+
     def get_all(self):
         """Return all model objects."""
         with self.data_connector.u_lock:

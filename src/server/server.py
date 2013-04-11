@@ -235,6 +235,14 @@ class Server:
         model = bundle.models[name]
         return model
 
+    def get_repository(self, model_name):
+        """Return the repository bound to the specified model.
+
+        The full name ('bundle.Model') should be specified.
+
+        """
+        model = self.get_model(model_name)
+        return model._repository
 
     def write_PID(self):
         """Write the PID (os.pid) in the user's directory configuration."""

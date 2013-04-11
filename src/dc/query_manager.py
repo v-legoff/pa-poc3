@@ -26,43 +26,34 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module containing the Query class, described below."""
+"""Module defining the QueryManager abstract class, defined below."""
 
-from query.filter import Filter
+from abc import *
 
-class Query:
+class QueryManager(metaclass=ABCMeta):
 
-    """Class representing a generic query with filters and specifications.
+    """Abstract class to represent a query manager for a connector.
 
-    This class provides several generic methods to build and extend
-    a query.  When a query is created, it must find the used data
-    connector.  When a query is executed, the whole query is sent to
-    the data connector that should answer by a generic result, as well.
+    A query manager is a class that is dedicated to interpret generic
+    queries (see the 'query' package).  Each data connector should
+    implement a query manager and each query manager should interact with the data connector to query
+    some informations in the data storage.  For instance, a generic
+    query could be converted to a SQL query for a SQL data connector.
 
     """
 
-    def __init__(self, data_connector, first_model=None):
+    def __init__(self, data_connector):
         self.data_connector = data_connector
-        self.first_model = first_model
-        self.filters = []
 
-    def filter(self, expression, parameter):
-        """Try to create a new filter based on the expression.
+    @abstractmethod
+    def query(self, query):
+        """Return a list of model objects filtered by the query.
 
-        The expression musst be a string with one of the following structure:
-            "field_name operator ?"
-            "? operator field_name"
-
-        The question mark (?) is replaced by the value of the
-        parameter.  Here are some possible calls to this method:
-            query.filter("username = ?", username)
-            query.filter("email_address =", email)
-            query.filter("? in tags", list_of_tags)
+        In this method are performed the query convertion to something
+        the data connector could understand and use.  If the provided
+        data connector is not bound to a query system (it can't find
+        specific objects, for instance), the cache should be used to
+        retrieve the results.
 
         """
-        filter = Filter(expression, parameter)
-        self.filters.append(filter)
-
-    def execute(self):
-        """Execute the query."""
-        return self.data_connector.query_manager.query(self)
+        pass
