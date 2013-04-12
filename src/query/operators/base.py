@@ -76,5 +76,6 @@ class Operator:
         self.parameters = parameters
 
     def __str__(self):
-        return type(self).expression.format(*self.parameters, field=field,
+        parameters = [repr(parameter) for parameter in self.parameters]
+        return type(self).expression.format(*parameters, field=self.field,
                 operator=type(self).name)

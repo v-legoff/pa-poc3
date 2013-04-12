@@ -28,6 +28,7 @@
 
 """Module containing the Query class, described below."""
 
+from model.functions import *
 from query.filter import Filter
 
 class Query:
@@ -45,8 +46,21 @@ class Query:
         self.data_connector = data_connector
         self.first_model = first_model
         self.filters = []
+        self.connectors = []
 
-    def filter(self, expression, *parameters):
+    def __str__(self):
+        query = "select {}".format(get_name(self.first_model, bundle=True))
+        if len(self.filters) == 1:
+            query += " where " + str(self.filters[0])
+        elif len(self.filters) > 1:
+            query += " where " + str(self.filters[0])
+            for connector, filter in zip(self.connectors, self.filters[1:]):
+                query += " " + connector
+                query += " " + str(filter)
+
+        return query
+
+    def filter(self, expression, *parameters, connector="and"):
         """Try to create a new filter based on the expression.
 
         The expression musst be a string with a structure defined by one
@@ -62,6 +76,11 @@ class Query:
         """
         filter = Filter(expression, *parameters)
         self.filters.append(filter)
+        connector = connector.lower()
+        if connector not in ("and", "or"):
+            raise ValueError("unknown connector {}".format(repr(connector)))
+
+        self.connectors.append(connector)
 
     def execute(self):
         """Execute the query."""

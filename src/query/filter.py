@@ -63,5 +63,8 @@ class Filter:
             raise ValueError("incorrect syntax: {}".format(
                     repr(expression)))
 
+    def __repr__(self):
+        return "<query.filter.Filter with {}>".format(str(self.operator))
+
     def __str__(self):
         return str(self.operator)
