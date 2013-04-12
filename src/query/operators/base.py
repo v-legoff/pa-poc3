@@ -26,7 +26,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import re
+
 """Module containing the base class Operator, defined below."""
+
+# Constants
+FIELD = r"[A-Za-z][A-Za-z0-9]*"
 
 class Operator:
 
@@ -41,7 +46,35 @@ class Operator:
     """
 
     name = None
-    field_first = True
-    def __init__(self, field, parameter):
+    expression = ""
+    nb_parameters = 1
+
+    @classmethod
+    def compile_regular_expression(cls):
+        """Compare the regular expression based on the expression.
+
+        The expression should be a string containing format-strings like:
+            {field} -- the field's name
+            {operator} -- the operator's name
+            {parameter} -- a parameter
+
+        Here's a simple example:
+            expression = "{field}{operator}{parameter}"
+
+        """
+        field = "(" + FIELD + ")"
+        operator = r"\s*" + re.escape(cls.name) + r"\s*"
+        parameter = r"\?"
+        parameters = cls.nb_parameters * [parameter]
+        expression = cls.expression.format(*parameters, operator=operator,
+                field=field)
+        print("Expression for", cls.name, "is", repr(expression))
+        return re.compile(expression)
+
+    def __init__(self, field, *parameters):
         self.field = field
-        self.value = value
+        self.parameters = parameters
+
+    def __str__(self):
+        return type(self).expression.format(*self.parameters, field=field,
+                operator=type(self).name)

@@ -34,6 +34,7 @@ Each operator should be a class inherited from query.operator.base.Operator.
 
 from query.operators.equal import EqualOperator
 
-OPERATORS = {
-    "=": EqualOperator,
-}
+OPERATORS = {}
+
+for operator in [EqualOperator]:
+    OPERATORS[operator.compile_regular_expression()] = operator

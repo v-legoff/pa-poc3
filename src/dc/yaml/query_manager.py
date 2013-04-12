@@ -77,8 +77,8 @@ class YAMLQueryManager(QueryManager):
         for filter in query.filters:
             function = self.find_operator(filter.operator.name)
             field = filter.field
-            parameter = filter.parameter
+            parameters = filter.parameters
             objects = [model_object for model_object in objects if \
-                    function(getattr(model_object, field), parameter)]
+                    function(getattr(model_object, field), *parameters)]
 
         return objects

@@ -39,3 +39,4 @@ class EqualOperator(Operator):
     """
 
     name = "="
+    expression = "{field}{operator}{}"

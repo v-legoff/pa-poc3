@@ -46,21 +46,21 @@ class Query:
         self.first_model = first_model
         self.filters = []
 
-    def filter(self, expression, parameter):
+    def filter(self, expression, *parameters):
         """Try to create a new filter based on the expression.
 
-        The expression musst be a string with one of the following structure:
-            "field_name operator ?"
-            "? operator field_name"
+        The expression musst be a string with a structure defined by one
+        of the operators.  The required parameters must be specified as
+        question marks ('?') in the string and be present in the right
+        order in the list of specified parameters.  Depending on the
+        operator, one or more parameters may be expected.
 
-        The question mark (?) is replaced by the value of the
-        parameter.  Here are some possible calls to this method:
-            query.filter("username = ?", username)
-            query.filter("email_address =", email)
-            query.filter("? in tags", list_of_tags)
+        This example uses the '=' operator.  The 'username'
+        variable contains a string:
+            filter("username = ?", username)
 
         """
-        filter = Filter(expression, parameter)
+        filter = Filter(expression, *parameters)
         self.filters.append(filter)
 
     def execute(self):
