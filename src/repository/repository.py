@@ -136,12 +136,14 @@ class Repository:
         with self.data_connector.u_lock:
             self.data_connector.add_object(model_object)
 
+        return model_object
+
     def update(self, model_object, attr, old_value):
         """Update the object in the data connector."""
         with self.data_connector.u_lock:
             self.data_connector.update_object(model_object, attr, old_value)
 
-    def delete_(self, model_object):
+    def delete(self, model_object):
         """Delete the object in the data connector."""
         with self.data_connector.u_lock:
             self.data_connector.remove_object(model_object)

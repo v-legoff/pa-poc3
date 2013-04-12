@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -42,7 +42,7 @@ from tests.dc.test import AbstractDCTest
 from dc.{nour_connector} import {YourConnector}
 
 class DCTest(AbstractDCTest, TestCase):
-    
+
     name = "dc_name"
     connector = {YourConnector}
 
@@ -55,19 +55,23 @@ import yaml
 from model import exceptions as mod_exceptions
 from model.functions import *
 from model import Model
+from repository import Repository
 from tests.model import *
 
+for model in models:
+    model._repository = Repository(None, model)
+
 class AbstractDCTest:
-    
+
     """Abstract class for testing data connectors.
-    
+
     This class is abstract.  It shouldn't be considered a regular
     test case and doesn't have enough informations to perform a test.
     It's a base test for a data connector (each data connector should
     have a class inherited from it).  This allows to test different
     data connector to check that each one has the same basic abilities
     as any other.
-    
+
     Testing methods (some could be added, NOT MODIFIED):
         test_create -- try to create an object from a model
         test_update -- try to update an object
@@ -79,189 +83,188 @@ class AbstractDCTest:
         test_default -- test the default value of a field
         test_find -- try to a retrieve a single object
         test_get_all -- try to retrieve all the created objects
-    
+
     Other methods:
         setUp -- set up the test case
         tearDown -- tear down the test case
-    
+
     """
-    
+
     def setUp(self):
         """Set up the data connector."""
         self.setup_data_connector()
         self.dc.clear()
-    
+
     def tearDown(self):
         """Destroy the data connector and tear it down."""
         dc = self.dc
         self.teardown_data_connector(destroy=True)
-    
+
     def setup_data_connector(self):
         """Setup the data_connector.
-        
+
         If available, read the configuration file found in
         test/config/dc/{data_connector_name}.yml.  Otherwise, the
         file is created with the default configuration found in
         dc/{data_connector_name}/parameters.yml.
-        
+
         """
         self.dc = type(self).connector()
         self.dc.setup_test()
         self.dc.record_models(models)
-        Model.data_connector = self.dc
-    
+        for model in models:
+            model._repository.data_connector = self.dc
+
     def teardown_data_connector(self, destroy=False):
         """Tear down the data connector."""
         self.dc.loop()
         if destroy:
             self.dc.destroy()
-        
+
         self.dc.close()
         self.dc = None
         Model.data_connector = None
-    
+
     def test_create(self):
         """Create a simple user."""
-        user = User(username="Kredh", password="fore123")
+        repository = User._repository
+        user = repository.create(username="Kredh", password="fore123")
         self.assertEqual(user.username, "Kredh")
         self.assertEqual(user.password, "fore123")
-    
+
     def test_update(self):
         """Create and update a simple user."""
-        user = User(username="Nitrate")
+        repository = User._repository
+        user = repository.create(username="Nitrate")
         user.username = "Erwyn"
         self.assertEqual(user.username, "Erwyn")
-    
+
     def test_save(self):
         """Create a simple user and start a new data connector.
-        
+
         This tests that the created datas are stored and can be retrieved
         exactly as they were stored.
-        
+
         """
-        user = User(username="Percyst")
+        repository = User._repository
+        user = repository.create(username="Percyst")
         uid = user.id
         username = user.username
-        users = User.get_all()
+        users = repository.get_all()
         self.teardown_data_connector()
         self.setup_data_connector()
-        retrieved = User.find(uid)
+        retrieved = repository.find(uid)
         self.assertEqual(retrieved.id, uid)
         self.assertEqual(retrieved.username, username)
-        self.assertIsNot(retrieved, user)        
-        self.assertEqual(len(User.get_all()), len(users))
-    
+        self.assertIsNot(retrieved, user)
+        self.assertEqual(len(repository.get_all()), len(users))
+
     def test_delete(self):
         """Create and delete an user.
-        
+
         After the user was deleted, try to update it (which souldn't
         work).
-        
+
         """
-        user = User(username="Noway")
-        user.delete()
+        repository = User._repository
+        user = repository.create(username="Noway")
+        repository.delete(user)
         self.assertRaises(mod_exceptions.UpdateDeletedObject, setattr,
                 user, "username", "no")
-    
+
     def test_primary_keys(self):
         """Test that no created user has the same ID as another."""
-        users = User.get_all()
+        repository = User._repository
+        users = repository.get_all()
         uids = set()
         for user in users:
             uids.add(user.id)
-        
+
         self.assertEqual(len(uids), len(users))
-    
+
     def test_update_primary_key(self):
         """Create and update the primary key of a product."""
-        product = Product(name="a jug of milk", price=2, quantity=1)
+        repository = Product._repository
+        product = repository.create(name="a jug of milk", price=2, quantity=1)
         product.name = "a croissant"
-        self.assertIs(product, Product.find("a croissant"))
-        self.assertRaises(mod_exceptions.ObjectNotFound, Product.find, \
+        self.assertIs(product, repository.find("a croissant"))
+        self.assertRaises(mod_exceptions.ObjectNotFound, repository.find, \
                 "a jug of milk")
-    
+
     def test_auto_increment(self):
         """Test the good behavior of a autoincrement field.
-        
+
         First, we get the user with the highest id.  When we create
         another user, its id should be greater than the previous one.
         This should still be true when we start a new data connection.
-        
+
         """
-        # Create at least one u ser (otherwise max will go crazy)
-        at_least_one_user = User(username="Atlist")
-        
+        # Create at least one user (otherwise max will go crazy)
+        repository = User._repository
+        at_least_one_user = repository.create(username="Atlist")
+
         # Get the user with the biggest id
-        max_user = max(User.get_all(), key=lambda user: user.id)
-        new_user = User(username="Ideafix")
+        max_user = max(repository.get_all(), key=lambda user: user.id)
+        new_user = repository.create(username="Ideafix")
         self.assertTrue(max_user.id < new_user.id)
-        
+
         # Reset the data connection
         self.teardown_data_connector()
         self.setup_data_connector()
-        still_new_user = User(username="Overall")
+        still_new_user = repository.create(username="Overall")
         self.assertTrue(new_user.id < still_new_user.id)
-    
+
         self.assertTrue(new_user.id < still_new_user.id)
-    
+
     def test_auto_increment_delete(self):
         """Check that old IDs are not re-used after deletion.
-        
+
         If we create a new user, an ID is allocated to it.  If we delete
         it and create a different user, its ID should be different (the old
         ID should not be used).
-        
+
         """
         # Create the first user
-        first_user = User(username="Uone")
+        repository = User._repository
+        first_user = repository.create(username="Uone")
         uid = first_user.id
-        first_user.delete()
-        
+        repository.delete(first_user)
+
         # Reset the data connection
         self.teardown_data_connector()
         self.setup_data_connector()
-        second_user = User(username="Utwo")
+        second_user = repository.create(username="Utwo")
         self.assertTrue(second_user.id > uid)
-        self.assertRaises(mod_exceptions.ObjectNotFound, User.find, uid)
-    
+        self.assertRaises(mod_exceptions.ObjectNotFound, repository.find, uid)
+
     def test_default(self):
         """Create a user to test the default value of 'password'."""
-        user = User(username="Delfin")
+        repository = User._repository
+        user = repository.create(username="Delfin")
         self.assertEqual(user.password, "unknown")
-    
+
     def test_callable_default(self):
         """Create a product to test the default with callable."""
-        product = Product(name="a huge car", price=100000, quantity=3)
+        repository = Product._repository
+        product = repository.create(name="a huge car", price=100000, quantity=3)
         self.assertEqual(product.total_price, 300000)
-    
+
     def test_find(self):
         """Create and try to find the created user."""
-        user = User(username="Martha")
-        
+        repository = User._repository
+        user = repository.create(username="Martha")
+
         # Test the find method with a positional argument
-        found_1 = User.find(user.id)
+        found_1 = repository.find(user.id)
         self.assertIs(user, found_1)
-        
+
         # Test the find method with keyword arguments
-        found_2 = User.find(id=user.id)
+        found_2 = repository.find(id=user.id)
         self.assertIs(found_1, found_2)
-    
+
     def test_get_all(self):
         """Create an user and look for it in the User.get_all()."""
-        user = User(username="Crowd")
-        users = User.get_all()
+        repository = User._repository
+        user = repository.create(username="Crowd")
+        users = repository.get_all()
         self.assertIn(user, users)
-    
-    def test_has_one(self):
-        """Test the HasOne relation.
-        
-        We try to create a post, then creates a comment bound to it.
-        
-        """
-        post = Post(title="the first blog entry", content="empty")
-        comment = Comment(post=post, content="great!")
-        self.assertIsNot(comment.post, None)
-        self.assertEqual(comment.post_id, post.id)
-        comment.post = None
-        self.assertIs(comment.post, None)
-        self.assertIs(comment.post_id, None)

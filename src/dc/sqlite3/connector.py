@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -49,58 +49,58 @@ SQLITE_TYPES = {
 }
 
 class Sqlite3Connector(DataConnector):
-    
+
     """Data connector for sqlite3.
-    
+
     This data connector should read and write datas using the sqlite3
     module (part of the python standard library).
-    
+
     """
-    
+
     name = "sqlite3"
     def __init__(self):
         """Check the driver presence.
-        
+
         If not found, raise a DriverNotFound exception.
-        
+
         """
         if not driver:
             raise exceptions.DriverNotFound(
                     "the sqlite3 library can not be found")
-        
+
         self.location = None
         self.created_tables = ()
-    
+
     def setup(self, location=None):
         """Setup the data connector."""
         if location is None:
             raise exceptions.InsufficientConfiguration(
                     "the location for storing datas was not specified for " \
                     "the sqlite3 data connector")
-        
+
         location = location.replace("\\", "/")
         if location.startswith("~"):
             location = os.path.expanduser("~") + location[1:]
-        
+
         location_dir = os.path.split(location)[0]
         if location_dir and not os.path.exists(location_dir):
             # Try to create it
             os.makedirs(location_dir)
-        
+
         DataConnector.__init__(self)
         self.location = location
         self.connection = sqlite3.connect(self.location)
-    
+
     def close(self):
         """Close the data connector."""
         self.connection.close()
-    
+
     def destroy(self):
         """Erase EVERY stored data."""
         self.clear_cache()
         self.connection.close()
         os.remove(self.location)
-    
+
     def record_models(self, models):
         """Record the tables."""
         cursor = self.connection.cursor()
@@ -109,14 +109,14 @@ class Sqlite3Connector(DataConnector):
         self.created_tables = tuple(tables)
         DataConnector.record_models(self, models)
         self.connection.commit()
-    
+
     def record_model(self, model):
         """Record a single model."""
         DataConnector.record_model(self, model)
         name = get_plural_name(model)
         if name not in self.created_tables:
             self.create_table(name, model)
-    
+
     def create_table(self, name, model):
         """Create the sqlite table related to the specified model."""
         fields = get_fields(model, register=True)
@@ -129,16 +129,16 @@ class Sqlite3Connector(DataConnector):
             if field.auto_increment:
                 instruction += " AUTOINCREMENT"
             sql_fields.append(instruction)
-        
+
         query = "CREATE TABLE {} ({})".format(name, ", ".join(sql_fields))
 
         cursor = self.connection.cursor()
         cursor.execute(query)
-    
+
     def loop(self):
         """Commit the database."""
         self.connection.commit()
-    
+
     def get_all_objects(self, model):
         """Return all the model's objects in a list."""
         name = get_name(model)
@@ -152,15 +152,15 @@ class Sqlite3Connector(DataConnector):
             dict_fields = {}
             for i, field in enumerate(fields):
                 dict_fields[field.field_name] = row[i]
-            
+
             object = self.get_from_cache(model, dict_fields)
             if object is None:
-                object = model.build(**dict_fields)
+                object = model(**dict_fields)
                 self.cache_object(object)
             objects.append(object)
-        
+
         return objects
-    
+
     def find_object(self, model, pkey_values):
         """Return, if found, the specified object."""
         self.connection.commit()
@@ -169,29 +169,29 @@ class Sqlite3Connector(DataConnector):
         object = self.get_from_cache(model, pkey_values)
         if object:
             return object
-        
+
         query = "SELECT * FROM {} WHERE ".format(get_plural_name(model))
         params = []
         filters = []
         for name, value in pkey_values.items():
             filters.append("{}=?".format(name))
             params.append(value)
-        
+
         query += " AND ".join(filters)
         cursor = self.connection.cursor()
         cursor.execute(query, tuple(params))
         row = cursor.fetchone()
         if row is None:
             raise mod_exceptions.ObjectNotFound(model, pkey_values)
-        
+
         dict_fields = {}
         for i, field in enumerate(get_fields(model, register=True)):
             dict_fields[field.field_name] = row[i]
-        
-        object = model.build(**dict_fields)
+
+        object = model(**dict_fields)
         self.cache_object(object)
         return object
-    
+
     def add_object(self, object):
         """Save the object, issued from a model."""
         name = get_name(type(object))
@@ -205,24 +205,24 @@ class Sqlite3Connector(DataConnector):
             if field.auto_increment:
                 auto_increments.append(field.field_name)
                 continue
-            
+
             names.append(field.field_name)
             values.append(getattr(object, field.field_name))
-        
+
         query += ", ".join(names) + ") values("
         query += ", ".join("?" * len(values)) + ")"
         cursor = self.connection.cursor()
         cursor.execute(query, tuple(values))
-        
+
         for field in auto_increments:
             query = "SELECT max(" + field + ") FROM " + plural_name
             cursor.execute(query)
             row = cursor.fetchone()
             value = row[0]
             update_attr(object, field, value)
-        
+
         self.cache_object(object)
-    
+
     def update_object(self, object, attribute, old_value):
         """Update an object."""
         self.check_update(object)
@@ -230,7 +230,7 @@ class Sqlite3Connector(DataConnector):
         self.update_cache(object, field, old_value)
         if not field.register:
             return False
-        
+
         plural_name = get_plural_name(type(object))
         keys = get_pkey_names(type(object))
         params = [getattr(object, attribute)]
@@ -240,7 +240,7 @@ class Sqlite3Connector(DataConnector):
         query += " WHERE " + " AND ".join(names)
         cursor = self.connection.cursor()
         cursor.execute(query, tuple(params))
-    
+
     def remove_object(self, object):
         """Delete the object."""
         name = get_name(type(object))
@@ -252,6 +252,6 @@ class Sqlite3Connector(DataConnector):
         query += " WHERE " + " AND ".join(names)
         cursor = self.connection.cursor()
         cursor.execute(query, values)
-        
+
         # Delete from cache
         self.uncache_object(object)

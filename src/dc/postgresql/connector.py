@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -49,33 +49,33 @@ PGSQL_TYPES = {
 }
 
 class PostgreSQLConnector(DataConnector):
-    
+
     """Data connector for PostgreSQL.
-    
+
     This data connector should read and write datas using the py-postgresql
     module: http://pypi.python.org/pypi/py-postgresql
-    
+
     """
-    
+
     name = "postgresql"
     def __init__(self):
         """Check the driver presence.
-        
+
         If not found, raise a DriverNotFound exception.
-        
+
         """
         if not driver:
             raise exceptions.DriverNotFound(
                     "the postgresql library (py-postgrseql module) " \
                             "can not be found")
-        
+
         self.db_host = None
         self.db_port = None
         self.db_name = None
         self.db_user = None
         self.db_pass = ""
         self.created_tables = ()
-    
+
     def setup(self, host=None, port=None, dbname=None, dbuser=None,
             dbpass=""):
         """Setup the data connector."""
@@ -83,28 +83,28 @@ class PostgreSQLConnector(DataConnector):
             raise exceptions.InsufficientConfiguration(
                     "the database host was not specified for " \
                     "the postgresql data connector")
-        
+
         if port is None:
             raise exceptions.InsufficientConfiguration(
                     "the database port was not specified for " \
                     "the postgresql data connector")
-        
+
         if dbname is None:
             raise exceptions.InsufficientConfiguration(
                     "the database name was not specified for " \
                     "the postgresql data connector")
-        
+
         if dbuser is None:
             raise exceptions.InsufficientConfiguration(
                     "the database user was not specified for " \
                     "the postgresql data connector")
-        
+
         DataConnector.__init__(self)
         if dbpass is None:
             dbpass = ""
         else:
             dbpass = str(dbpass)
-        
+
         self.db_host = host
         self.db_port = port
         self.db_name = dbname
@@ -114,11 +114,11 @@ class PostgreSQLConnector(DataConnector):
                 "pq://{user}:{password}@{host}:{port}/{database}".format(
                 user=dbuser, password=dbpass, host=host, port=port,
                 database=dbname))
-    
+
     def close(self):
         """Close the data connector."""
         self.connection.close()
-    
+
     def destroy(self):
         """Erase EVERY stored data."""
         self.clear_cache()
@@ -126,23 +126,23 @@ class PostgreSQLConnector(DataConnector):
             name = get_plural_name(model)
             query = "DROP TABLE {}".format(name)
             self.connection.execute(query)
-        
+
         self.connection.close()
-    
+
     def record_models(self, models):
         """Record the tables."""
         query = "SELECT table_name FROM information_schema.tables"
         statement = self.connection.prepare(query)
         self.created_tables = tuple(row[0] for row in statement())
         DataConnector.record_models(self, models)
-    
+
     def record_model(self, model):
         """Record a single model."""
         DataConnector.record_model(self, model)
         name = get_plural_name(model)
         if name not in self.created_tables:
             self.create_table(name, model)
-    
+
     def create_table(self, name, model):
         """Create the PostgreSQL table related to the specified model."""
         fields = get_fields(model, register=True)
@@ -152,19 +152,19 @@ class PostgreSQLConnector(DataConnector):
                 sql_field = "SERIAL"
             else:
                 sql_field = PGSQL_TYPES[type(field)]
-            
+
             instruction = field.field_name + " " + sql_field
             if field.pkey:
                 instruction += " PRIMARY KEY"
             sql_fields.append(instruction)
-        
+
         query = "CREATE TABLE {} ({})".format(name, ", ".join(sql_fields))
         self.connection.execute(query)
-    
+
     def loop(self):
         """Nothing to do right now."""
         pass
-    
+
     def get_all_objects(self, model):
         """Return all the model's objects in a list."""
         name = get_name(model)
@@ -177,15 +177,15 @@ class PostgreSQLConnector(DataConnector):
             dict_fields = {}
             for i, field in enumerate(fields):
                 dict_fields[field.field_name] = row[i]
-            
+
             object = self.get_from_cache(model, dict_fields)
             if object is None:
-                object = model.build(**dict_fields)
+                object = model(**dict_fields)
                 self.cache_object(object)
             objects.append(object)
-        
+
         return objects
-    
+
     def find_object(self, model, pkey_values):
         """Return, if found, the specified object."""
         # First, look for the object in the cached tree
@@ -193,29 +193,29 @@ class PostgreSQLConnector(DataConnector):
         object = self.get_from_cache(model, pkey_values)
         if object:
             return object
-        
+
         query = "SELECT * FROM {} WHERE ".format(get_plural_name(model))
         params = []
         filters = []
         for i, (name, value) in enumerate(pkey_values.items()):
             filters.append("{}=${i}".format(name, i=i + 1))
             params.append(value)
-        
+
         query += " AND ".join(filters)
         statement = self.connection.prepare(query)
         rows = statement(*params)
         if not rows:
             raise mod_exceptions.ObjectNotFound(model, pkey_values)
-        
+
         row = rows[0]
         dict_fields = {}
         for i, field in enumerate(get_fields(model, register=True)):
             dict_fields[field.field_name] = row[i]
-        
-        object = model.build(**dict_fields)
+
+        object = model(**dict_fields)
         self.cache_object(object)
         return object
-    
+
     def add_object(self, object):
         """Save the object, issued from a model."""
         name = get_name(type(object))
@@ -231,25 +231,25 @@ class PostgreSQLConnector(DataConnector):
             if field.auto_increment:
                 auto_increments.append(field.field_name)
                 continue
-            
+
             names.append(field.field_name)
             values.append(getattr(object, field.field_name))
             sql_fields.append("$" + str(i))
             i += 1
-        
+
         query += ", ".join(names) + ") values("
         query += ", ".join(sql_fields) + ")"
         statement = self.connection.prepare(query)
         res = statement(*values)
-        
+
         for field in auto_increments:
             query = "SELECT max(" + field + ") FROM " + plural_name
             statement = self.connection.prepare(query)
             value = statement()[0][0]
             update_attr(object, field, value)
-        
+
         self.cache_object(object)
-    
+
     def update_object(self, object, attribute, old_value):
         """Update an object."""
         self.check_update(object)
@@ -257,7 +257,7 @@ class PostgreSQLConnector(DataConnector):
         self.update_cache(object, field, old_value)
         if not field.register:
             return False
-        
+
         plural_name = get_plural_name(type(object))
         keys = get_pkey_names(type(object))
         params = [getattr(object, attribute)]
@@ -268,7 +268,7 @@ class PostgreSQLConnector(DataConnector):
         query += " WHERE " + " AND ".join(names)
         statement = self.connection.prepare(query)
         res = statement(*params)
-    
+
     def remove_object(self, object):
         """Delete the object."""
         name = get_name(type(object))
@@ -280,6 +280,6 @@ class PostgreSQLConnector(DataConnector):
         query += " WHERE " + " AND ".join(names)
         statement = self.connection.prepare(query)
         res = statement(*values)
-        
+
         # Delete from cache
         self.uncache_object(object)

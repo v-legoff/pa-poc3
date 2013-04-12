@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -44,61 +44,61 @@ from model import exceptions as mod_exceptions
 from model.functions import *
 
 class MongoDBConnector(DataConnector):
-    
+
     """Data connector for MongoDB.
-    
+
     This data connector accesses and stores datas through the pymongo
     library.  It needs a mongoDB server running on the same host.
-    
+
     The stored datas in MongoDB are documents.  A document is free-schema
     (that is, it doesn't need a standard schema like ANY user HAS one
     username (string), one password (string), and so forth.  However,
     as Python Aboard uses schemas to define models, every document in a
     collection should contain the same types of information.
-    
+
     """
-    
+
     name = "mongo"
     configuration = MongoConfiguration
     def __init__(self):
         """Check the driver presence.
-        
+
         If not found, raise a DriverNotFound exception.
-        
+
         """
         if not driver:
             raise exceptions.DriverNotFound(
                     "the pymongo library can not be found")
-        
+
         DataConnector.__init__(self)
         self.db_name = "datas"
         self.inc_name = "increments"
-    
+
     def setup(self, datas=None, increments=None):
         """Setup the data connector."""
         datas = datas if datas else self.db_name
         increments = increments if increments else self.inc_name
         self.db_name = datas
         self.inc_name = increments
-        
+
         # Try to connect
         self.connection = pymongo.Connection()
-        
+
         # Create the datas and increments collections
         self.datas = self.connection[datas]
         self.increments = self.connection[increments]
-        
+
         # Set the collections
         self.collections = {}
         self.inc_collections = {}
-        
+
         # Keep the IDs in cache
         self.object_ids = {}
-    
+
     def close(self):
         """Close the data connector."""
         self.connection.close()
-    
+
     def clear(self):
         """Clear the stored datas."""
         for name in self.models.keys():
@@ -107,14 +107,14 @@ class MongoDBConnector(DataConnector):
             self.increments[name].remove({})
             self.increments.drop_collection(name)
         DataConnector.clear(self)
-    
+
     def destroy(self):
         """Erase EVERY stored data."""
         self.connection.drop_database(self.db_name)
         self.connection.drop_database(self.inc_name)
         self.connection.close()
         self.clear_cache()
-    
+
     def record_model(self, model):
         """Record the given model."""
         DataConnector.record_model(self, model)
@@ -122,12 +122,12 @@ class MongoDBConnector(DataConnector):
         self.collections[name] = self.datas[name]
         self.inc_collections[name] = self.increments[name]
         self.object_ids[name] = {}
-    
+
     def get_and_update_increment(self, table, field):
         """Get and update an auto-increment field.
-        
+
         If not found in the specified table, return 1 but update to 2.
-        
+
         """
         value = self.increments[table].find_one({
                 "name": field})
@@ -135,15 +135,15 @@ class MongoDBConnector(DataConnector):
             value = value["current"]
         else:
             value = 1
-        
+
         self.increments[table].remove({"name": field})
         self.increments[table].insert({
                 "name": field,
                 "current": value + 1,
         })
-        
+
         return value
-    
+
     def get_all_objects(self, model):
         """Return all the model's object in a list."""
         name = get_name(model)
@@ -158,35 +158,35 @@ class MongoDBConnector(DataConnector):
                 update(object, data)
                 self.cache_object(object)
                 self.object_ids[name][object] = m_id
-            
+
             objects.append(object)
-        
+
         return objects
-    
+
     def find_object(self, model, pkey_values):
         """Return, if found, the selected object.
-        
+
         Raise a model.exceptions.ObjectNotFound if not found.
-        
+
         """
         # Look for the object in the cached tree
         name = get_name(model)
         object = self.get_from_cache(model, pkey_values)
         if object:
             return object
-        
+
         # Look for the object in the datas
         datas = self.datas[name].find_one(pkey_values)
         if datas:
             m_id = datas["_id"]
             del datas["_id"]
-            object = model.build(**datas)
+            object = model(**datas)
             self.cache_object(object)
             self.object_ids[name][object] = m_id
             return object
-        
+
         raise mod_exceptions.ObjectNotFound(model, pkey_values)
-    
+
     def add_object(self, mod_object):
         """Save the object, issued from a model."""
         name = get_name(type(mod_object))
@@ -194,28 +194,28 @@ class MongoDBConnector(DataConnector):
         for field in fields:
             if not field.auto_increment:
                 continue
-            
+
             value = self.get_and_update_increment(name, field.field_name)
             update_attr(mod_object, field.field_name, value)
-        
+
         m_id = self.datas[name].insert(mod_object.__dict__)
         self.cache_object(mod_object)
         self.object_ids[name][mod_object] = m_id
-    
+
     def update_object(self, object, attribute, old_value):
         """Update an object."""
         self.check_update(object)
         field = getattr(type(object), attribute)
         if not field.register:
             return False
-        
+
         self.update_cache(object, field, old_value)
         name = get_name(type(object))
         m_id = self.object_ids[name][object]
         f_update = dict(object.__dict__)
         f_update["_id"] = m_id
         self.datas[name].update({"_id": m_id}, f_update)
-    
+
     def remove_object(self, object):
         """Delete the object."""
         # Delete from cache
