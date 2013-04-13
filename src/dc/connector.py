@@ -30,262 +30,41 @@
 
 import os
 import yaml
-from threading import RLock
-
-from dc.converters import *
-from model import exceptions as mod_exceptions
-from model.functions import *
-from model.types import *
 
 class DataConnector:
 
     """Class representing a data connector, a wrapper to access datas.
 
-    The DataConnector is an abstrat class, which SHOULD NOT be
-    instanciated, but inherited from the usable data connectors.
-    Each data connector represents a way to access organized datas,
-    as a SQL driver or alike.
-
-    Method to define in the subclass:
-        __init__(self) -- mainly check (if needed) the driver presence
-        setup(self) -- setup the data connector
-        setup_test(self) -- setup the driver with test configurations
-        close(self) -- close the data connector (close connection if needed)
-        clear(self) -- clear the stored datas (ERASE ALL)
-        destroy(self) -- destroy the data connector and clear all datas
-        record_models(self, models) -- record the given models
-        record_model(self, model) -- record a specifid model
-        get_all_objects(self, model) -- return all model's objects
-        find_object(self, model, pkey_values) -- find an object
-        add_object(self, object) -- save a new object
-        update_object(self, object, attribute, old_value) -- update an object
-        remove_object(self, object) -- delete a stored object
-
-    In addition, the created or retrieved objects are stored in cache.
-    Methods to access or manipulate cached objects:
-        get_from_cache(self, model, primary_attributes)
-        cache_object(self, object)
-        uncache(self, object)
-        clear_cache(self)
-
-    For more informations, see the details of each method.
+    The Data Connector is a class that contains:
+    -   A Driver, used to communicate with the data storage
+    -   A repository manager, used to manage the objects and the cache
+    -   A query manager, used to interpret queries.
 
     """
 
     name = "unspecified"
-    converters = {
-        List: ListConverter,
-    }
-
+    configuration = None
+    driver = None
+    query_manager = None
+    repository_manager = None
     def __init__(self):
         """Initialize the data connector."""
-        self.running = False
-        self.objects_tree = {}
-        self.models = {}
-        self.deleted_objects = []
-        self.query_manager = None
+        self.driver = type(self).driver()
+        self.repository_manager = type(self).repository_manager(self.driver)
+        self.query_manager = type(self).query_manager(self.driver,
+                self.repository_manager)
 
-        # Locks for threads
-        self.u_lock = RLock()
+    @property
+    def u_lock(self):
+        return self.driver.u_lock
 
-    def setup(self):
-        """Setup the data connector."""
-        raise NotImplementedError
-
-    @classmethod
-    def to_storage(cls, object):
-        """Return a dictionary representing the object to save.
-
-        This method uses the 'converters' class attribute which contains
-        a dictionary with, in key, the field types (Integer, String,
-        List, ...) and as values their corresponding formatters.  A
-        formatter can be specific to a data connector or common to all
-        data connectors.  If the field type is not in the 'converters'
-        dictionary (or if its value is None), then no converter is used.
-
-        To learn more about converters, look at the abstract class Converter
-        in the converters/base.py file.
-
-        """
-        # First we get the list of fields
-        fields = get_fields(type(object), register=True)
-        values = {}
-        for field in fields:
-            value = getattr(object, field.field_name)
-            type_field = type(field)
-            if cls.converters.get(type_field):
-                converter = cls.converters[type_field]
-                value = converter.to_storage(value)
-
-            values[field.field_name] = value
-
-        return values
+    def setup(self, configuration_path):
+        """Try to setup and open the data connector."""
+        config = type(self).configuration
+        configuration = config.read_YAML(configuration_path)
+        self.driver.open(configuration)
 
     def setup_test(self):
-        """Setup the data connector with test information."""
-        cfg_dir = "tests/config/dc"
-        cfg_path = cfg_dir + "/" + self.name + ".yml"
-        def_cfg_path = "dc/" + self.name + "/parameters.yml"
-        if not os.path.exists(cfg_path):
-            if not os.path.exists(cfg_dir):
-                os.makedirs(cfg_dir)
-
-            with open(def_cfg_path, "r") as cfg_file:
-                cfg_content = cfg_file.read()
-
-            with open(cfg_path, "w") as cfg_file:
-                cfg_file.write(cfg_content)
-        else:
-            with open(cfg_path, "r") as cfg_file:
-                cfg_content = cfg_file.read()
-
-        cfg_dict = yaml.load(cfg_content)
-        self.setup(**cfg_dict)
-
-    def close(self):
-        """Close the data connector (the database connection for instance)."""
-        raise NotImplementedError
-
-    def clear(self):
-        """Clear the stored datas and register the models."""
-        self.objects_tree = {}
-        self.record_models(list(self.models.values()))
-
-    def destroy(self):
-        """Destroy and erase EVERY stored data."""
-        raise NotImplementedError
-
-    def record_models(self, models):
-        """Record the given models.
-
-        The parameter must be a list of classes. Each class must
-        be a model.
-
-        """
-        for model in models:
-            self.record_model(model)
-
-        self.running = True
-
-    def record_model(self, model):
-        """Record the given model, a subclass of model.Model."""
-        name = get_name(model)
-        self.models[name] = model
-        self.objects_tree[name] = {}
-        return name
-
-    def loop(self):
-        """Record some datas or commit some changes if necessary."""
-        pass
-
-    def get_all_objects(self, model):
-        """Return all the model's object in a list."""
-        raise NotImplementedError
-
-    def find_object(self, model, pkey_values):
-        """Return, if found, the selected object.
-
-        Raise a model.exceptions.ObjectNotFound if not found.
-
-        """
-        raise NotImplementedError
-
-    def add_object(self, object):
-        """Save the object, issued from a model.
-
-        Usually this method should:
-        -   Save the object (in a database, for instance)
-        -   Cache the object.
-
-        """
-        raise NotImplementedError
-
-    def update_object(self, object, attribute, old_value):
-        """Update an object."""
-        raise NotImplementedError
-
-    def remove_object(self, object):
-        """Delete object from cache."""
-        raise NotImplementedError
-
-    def get_from_cache(self, model, attributes):
-        """Return, if found, the cached object.
-
-        The expected parameters are:
-            model -- the model (Model subclass)
-            attributes -- a dictionary {name1: value1, ...}
-
-        """
-        name = get_name(model)
-        pkey_names = get_pkey_names(model)
-        cache = self.objects_tree.get(name, {})
-        values = tuple(attributes.get(name) for name in pkey_names)
-        if len(values) == 1:
-            values = values[0]
-
-        return cache.get(values)
-
-    def cache_object(self, object):
-        """Save the object in cache."""
-        pkey = get_pkey_values(object)
-        if len(pkey) == 1:
-            pkey = pkey[0]
-
-        self.objects_tree[get_name(type(object))][pkey] = object
-
-    def uncache_object(self, object):
-        """Remove the object from cache."""
-        name = get_name(type(object))
-        values = tuple(get_pkey_values(object))
-        if len(values) == 1:
-            values = values[0]
-
-        cache = self.objects_tree.get(name, {})
-        if values in cache.keys():
-            del cache[values]
-            self.deleted_objects.append((name, values))
-
-    def update_cache(self, object, field, old_value):
-        """This method is called to update the cache for an object.
-
-        If the field is one of the primary keys, then it should be
-        updated in the cache too.
-
-        """
-        attr = field.field_name
-        if old_value is None:
-            return
-
-        if not field.pkey:
-            return
-
-        pkey = get_pkey_values(object)
-        old_pkey = get_pkey_values(object, {attr: old_value})
-
-        if len(pkey) == 1:
-            pkey = pkey[0]
-            old_pkey = old_pkey[0]
-
-        name = get_name(type(object))
-        tree = self.objects_tree[name]
-        if old_pkey in tree:
-            del tree[old_pkey]
-        tree[pkey] = object
-
-    def clear_cache(self):
-        """Clear the cache."""
-        self.objects_tree = {}
-
-    def check_update(self, object):
-        """Raise a ValueError if the object was deleted."""
-        if self.was_deleted(object):
-            raise mod_exceptions.UpdateDeletedObject(object)
-
-    def was_deleted(self, object):
-        """Return whether the object was deleted (uncached)."""
-        name = get_name(type(object))
-        values = tuple(get_pkey_values(object))
-        if len(values) == 1:
-            values = values[0]
-
-        return (name, values) in self.deleted_objects
+        """Setup for testing."""
+        path = "tests/config/dc/" + type(self).name + ".yml"
+        self.setup(path)

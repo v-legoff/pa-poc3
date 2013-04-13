@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,24 +31,13 @@
 from model.types.base import BaseType
 
 class String(BaseType):
-    
+
     """Field type: string.
-    
+
     This type of field handles a string of characters of different length.
-    
+
     """
-    
+
     type_name = "string"
-    def __init__(self, pkey=False, default=None):
-        BaseType.__init__(self, pkey, default)
-    
-    def accept_value(self, value):
-        """Return True if this value is accepted.
-        
-        Raise a ValueError otherwise.
-        
-        """
-        if not isinstance(value, str):
-            BaseType.accept_value(self, value)
-        
-        return True
+    def __init__(self, default=None, **kwargs):
+        BaseType.__init__(self, default, **kwargs)

@@ -93,11 +93,10 @@ class AbstractDCTest:
     def setUp(self):
         """Set up the data connector."""
         self.setup_data_connector()
-        self.dc.clear()
+        self.dc.repository_manager.clear()
 
     def tearDown(self):
         """Destroy the data connector and tear it down."""
-        dc = self.dc
         self.teardown_data_connector(destroy=True)
 
     def setup_data_connector(self):
@@ -111,19 +110,18 @@ class AbstractDCTest:
         """
         self.dc = type(self).connector()
         self.dc.setup_test()
-        self.dc.record_models(models)
+        self.dc.repository_manager.record_models(models)
         for model in models:
             model._repository.data_connector = self.dc
 
     def teardown_data_connector(self, destroy=False):
         """Tear down the data connector."""
-        self.dc.loop()
+        self.dc.repository_manager.save()
         if destroy:
-            self.dc.destroy()
+            self.dc.driver.destroy()
 
-        self.dc.close()
+        self.dc.driver.close()
         self.dc = None
-        Model.data_connector = None
 
     def test_create(self):
         """Create a simple user."""

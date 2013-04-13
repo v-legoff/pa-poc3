@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,27 +26,29 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the data connector exceptions.
+"""This module contains the IntegerConstraint class, defined below."""
 
-These exceptions should be used instead of driver-specific exceptions when
-possible.
+from model.constraints.base import BaseConstraint
 
-"""
+class IntegerConstraint(BaseConstraint):
 
-class ConnectorError(RuntimeError):
+    """Class representing constraints on an Integer field type.
 
-    """Abstract connector error exception."""
+    Integers have the following constraints:
+        auto_increment
 
-    pass
+    """
 
-class DriverNotFound(ConnectorError):
+    name_type = "integer"
+    constraints = ["pkey", "auto_increment"]
+    def __init__(self, base_type, pkey=False, auto_increment=False):
+        self.base_type = base_type
+        self.pkey = pkey
+        self.auto_increment = auto_increment
 
-    """Exception raised when the selected driver can't be found."""
+    def control(self, value):
+        """Return whether the value is correct for these constraints."""
+        if self.auto_increment:
+            return False
 
-    pass
-
-class ConnexionAlreadyEstablished(ConnectorError):
-
-    """This exception raised when trying to open a already-open connexion."""
-
-    pass
+        return True

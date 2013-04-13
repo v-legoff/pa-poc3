@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,26 +31,14 @@
 from model.types.base import BaseType
 
 class Integer(BaseType):
-    
+
     """Field type: integer.
-    
+
     This type of field handle an integer (positive, null or negative).  It
     DOES NOT handle floating numbers (see Float below).
-    
+
     """
-    
+
     type_name = "integer"
-    def __init__(self, pkey=False, auto_increment=False, default=None):
-        BaseType.__init__(self, pkey, default)
-        self.auto_increment = auto_increment
-    
-    def accept_value(self, value):
-        """Return True if this value is accepted.
-        
-        Raise a ValueError otherwise.
-        
-        """
-        if value is not None and not isinstance(value, int):
-            BaseType.accept_value(self, value)
-        
-        return True
+    def __init__(self, default=None, **kwargs):
+        BaseType.__init__(self, default, **kwargs)

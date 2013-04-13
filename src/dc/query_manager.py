@@ -42,8 +42,9 @@ class QueryManager(metaclass=ABCMeta):
 
     """
 
-    def __init__(self, data_connector):
-        self.data_connector = data_connector
+    def __init__(self, driver, repository_manager):
+        self.driver = driver
+        self.repository_manager = repository_manager
 
     @abstractmethod
     def query(self, query):

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,27 +26,35 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the data connector exceptions.
+"""This module contains the StringConstraint class, defined below."""
 
-These exceptions should be used instead of driver-specific exceptions when
-possible.
+from model.constraints.base import BaseConstraint
 
-"""
+class StringConstraint(BaseConstraint):
 
-class ConnectorError(RuntimeError):
+    """Class representing constraint on a String field type.
 
-    """Abstract connector error exception."""
+    Strings have the following constraints:
+        min_length -- the minimum length
+        max_length -- the maximum length
 
-    pass
+    """
 
-class DriverNotFound(ConnectorError):
+    type_name = "string"
+    constraints = ["pkey", "min_length", "max_length"]
+    def __init__(self, base_type, pkey=False, min_length=False,
+            max_length=False):
+        self.base_type = base_type
+        self.pkey = pkey
+        self.min_length = min_length
+        self.max_length = max_length
 
-    """Exception raised when the selected driver can't be found."""
+    def control(self, value):
+        """Return whether the value is correct for these constraints."""
+        if self.min_length and len(value) < self.min_length:
+            return False
 
-    pass
+        if self.max_length and len(value) > self.max_length:
+            return False
 
-class ConnexionAlreadyEstablished(ConnectorError):
-
-    """This exception raised when trying to open a already-open connexion."""
-
-    pass
+        return True

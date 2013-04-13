@@ -78,8 +78,11 @@ class Model(metaclass=MetaModel):
 
         # Get the default values
         for name, field in fields.items():
-            if not field.auto_increment and not name in kwargs and \
-                    field.set_default:
+            if field.constraint and hasattr(field.constraint,
+                    "auto_increment") and field.constraint.auto_increment:
+                continue
+
+            if not name in kwargs and field.set_default:
                 default = field.default
                 if default is None:
                     raise ValueError("the field {} of model {} has no " \
@@ -97,20 +100,12 @@ class Model(metaclass=MetaModel):
         return "<model {} ({})>".format(get_name(type(self)), pkeys)
 
     def __setattr__(self, attr, value):
-        """Set the value to the field.
-
-        This method checks the value type as well.
-
-        """
+        """Set the value to the field."""
         try:
             field = getattr(type(self), attr)
         except AttributeError:
             object.__setattr__(self, attr, value)
             return
-
-        if isinstance(field, BaseType) and field.register:
-            # Check the value type
-            check = field.accept_value(value)
 
         old_value = getattr(self, attr)
         object.__setattr__(self, attr, value)

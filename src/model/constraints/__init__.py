@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,27 +26,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the data connector exceptions.
+"""This package contains the model contraints."""
 
-These exceptions should be used instead of driver-specific exceptions when
-possible.
+from model.constraints.integer import IntegerConstraint
+from model.constraints.string_pa import StringConstraint
 
-"""
-
-class ConnectorError(RuntimeError):
-
-    """Abstract connector error exception."""
-
-    pass
-
-class DriverNotFound(ConnectorError):
-
-    """Exception raised when the selected driver can't be found."""
-
-    pass
-
-class ConnexionAlreadyEstablished(ConnectorError):
-
-    """This exception raised when trying to open a already-open connexion."""
-
-    pass
+CONSTRAINTS = {
+    "integer": IntegerConstraint,
+    "string": StringConstraint,
+}

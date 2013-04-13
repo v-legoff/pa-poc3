@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,15 +31,15 @@
 from model.functions import *
 
 class MetaModel(type):
-    
+
     """The model's metaclass.
-    
+
     Its job is to set the field list right.  The most important things are:
     -   Check that every field inherited from another class is copied
     -   Check that the field NIDs are properly set.
-    
+
     """
-    
+
     def __init__(cls, name, parents, attributes):
         type.__init__(cls, name, parents, attributes)
         fields = get_fields(cls)
@@ -48,6 +48,9 @@ class MetaModel(type):
             if field not in attributes.values():
                 # The field is obviously defined in a parent class
                 copied = field.copy()
+                if copied.constraint:
+                    copied.constraint.base_type = copied
+
                 # We can count on the field_name attribute whic has been set
                 # previously
                 name = field.field_name
@@ -58,7 +61,7 @@ class MetaModel(type):
                         field][0]
             field.field_name = name
             clean_fields.append(field)
-        
+
         # We set the NIDs
         nids = sorted(field.nid for field in clean_fields)
         for i, nid in enumerate(nids):
@@ -66,7 +69,7 @@ class MetaModel(type):
             field.nid = nid
             field.model = cls
             field.extend()
-    
+
     def __repr__(self):
         """Return the model's name."""
         return get_name(self, bundle=False)

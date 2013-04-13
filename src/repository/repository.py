@@ -72,7 +72,8 @@ class Repository:
     def get_all(self):
         """Return all model objects."""
         with self.data_connector.u_lock:
-            return self.data_connector.get_all_objects(self.model)
+            return self.data_connector.repository_manager.get_all_objects(
+                    self.model)
 
     def find(self, pkey=None, **kwargs):
         """Find and return (if found) an object identified by its keys.
@@ -121,7 +122,8 @@ class Repository:
 
         object = None
         with self.data_connector.u_lock:
-            object = self.data_connector.find_object(self.model, pkey_values)
+            object = self.data_connector.repository_manager.find_object(
+                    self.model, pkey_values)
 
         return object
 
@@ -134,19 +136,20 @@ class Repository:
         """
         model_object = self.model(**kwargs)
         with self.data_connector.u_lock:
-            self.data_connector.add_object(model_object)
+            self.data_connector.repository_manager.add_object(model_object)
 
         return model_object
 
     def update(self, model_object, attr, old_value):
         """Update the object in the data connector."""
         with self.data_connector.u_lock:
-            self.data_connector.update_object(model_object, attr, old_value)
+            self.data_connector.repository_manager.update_object(
+                    model_object, attr, old_value)
 
     def delete(self, model_object):
         """Delete the object in the data connector."""
         with self.data_connector.u_lock:
-            self.data_connector.remove_object(model_object)
+            self.data_connector.repository_manager.remove_object(model_object)
 
     def query(self):
         """Return a new empty query."""
