@@ -119,8 +119,9 @@ class AbstractDCTest:
         self.dc.repository_manager.save()
         if destroy:
             self.dc.driver.destroy()
+        else:
+            self.dc.driver.close()
 
-        self.dc.driver.close()
         self.dc = None
 
     def test_create(self):

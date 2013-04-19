@@ -175,6 +175,26 @@ class Driver(metaclass=ABCMeta):
         self.tables[table.name] = table
 
     @abstractmethod
+    def query_for_lines(self, table_name):
+        """Return all the table's line.
+
+        This method should query for the specified table and return each
+        line in a list of dictionary.
+
+        """
+        return []
+
+    @abstractmethod
+    def query_for_line(self, table_name, identifeirs):
+        """Query for the specified line.
+
+        This method should select and return the selected line, if found,
+        or None if not.
+
+        """
+        pass
+
+    @abstractmethod
     def add_line(self, table_name, line):
         """Add a new line to the table.
 

@@ -160,6 +160,25 @@ class YAMLDriver(Driver):
         with open(self.location + "/" + name + ".yml", "w") as file:
             file.write(content)
 
+    def query_for_lines(self, table_name):
+        """Return all the table's line.
+
+        This method should query for the specified table and return each
+        line in a list of dictionary.
+
+        """
+        return []
+
+    def query_for_line(self, table_name, identifeirs):
+        """Query for the specified line.
+
+        This method should select and return the selected line, if found,
+        or None if not.  For YAML, if the object is not in the cache, it's
+        not in the file, so we can return None right away.
+
+        """
+        return None
+
     def add_line(self, table_name, line):
         """Add a new line."""
         table = self.tables[table_name]

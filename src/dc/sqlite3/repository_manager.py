@@ -26,35 +26,35 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the StringConstraint class, defined below."""
+"""Module defining the Sqlite3RepositoryManager class."""
 
-from model.constraints.base import BaseConstraint
+from dc.repository_manager import RepositoryManager
+from dc import exceptions
+from model.functions import *
 
-class StringConstraint(BaseConstraint):
+class Sqlite3RepositoryManager(RepositoryManager):
 
-    """Class representing constraint on a String field type.
+    """Repository manager for sqlite3."""
 
-    Strings have the following constraints:
-        min_length -- the minimum length
-        max_length -- the maximum length
 
-    """
+    def record_model(self, model):
+        """Record the given model."""
+        RepositoryManager.record_model(self, model)
+        table = self.build_table(model)
+        self.driver.add_table(table)
 
-    name_type = "string"
-    constraints = ["pkey", "min_length", "max_length"]
-    def __init__(self, base_type, pkey=False, min_length=False,
-            max_length=False):
-        self.base_type = base_type
-        self.pkey = pkey
-        self.min_length = min_length
-        self.max_length = max_length
+    def save(self):
+        """Commit the database connexion."""
+        self.driver.connection.commit()
 
-    def control(self, value):
-        """Return whether the value is correct for these constraints."""
-        if self.min_length and len(value) < self.min_length:
-            return False
+    def add_object(self, model_object):
+        """Save the object, issued from a model."""
+        RepositoryManager.add_object(self, model_object)
 
-        if self.max_length and len(value) > self.max_length:
-            return False
+    def update_object(self, model_object, attribute, old_value):
+        """Update an object."""
+        RepositoryManager.update_object(self, model_object, attribute, old_value)
 
-        return True
+    def remove_object(self, model_object):
+        """Delete the object."""
+        RepositoryManager.remove_object(self, model_object)

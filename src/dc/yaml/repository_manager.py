@@ -70,19 +70,6 @@ class YAMLRepositoryManager(RepositoryManager):
         name = get_name(model)
         return list(self.objects_tree.get(name, {}).values())
 
-    def find_object(self, model, pkey_values):
-        """Return, if found, the selected object.
-
-        Raise a model.exceptions.ObjectNotFound if not found.
-
-        """
-        # Look for the object in the cached tree
-        object = self.get_from_cache(model, pkey_values)
-        if object:
-            return object
-
-        raise mod_exceptions.ObjectNotFound(model, pkey_values)
-
     def add_object(self, model_object):
         """Save the object, issued from a model."""
         RepositoryManager.add_object(self, model_object)

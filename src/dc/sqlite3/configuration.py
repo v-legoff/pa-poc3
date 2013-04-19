@@ -26,35 +26,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the StringConstraint class, defined below."""
+"""Module containing the default configuration for the 'sqlite3' DC."""
 
-from model.constraints.base import BaseConstraint
+from configuration import *
 
-class StringConstraint(BaseConstraint):
+class Sqlite3Configuration(Configuration):
 
-    """Class representing constraint on a String field type.
+    """Class defining the default configuration for the sqlite3 DC."""
 
-    Strings have the following constraints:
-        min_length -- the minimum length
-        max_length -- the maximum length
-
-    """
-
-    name_type = "string"
-    constraints = ["pkey", "min_length", "max_length"]
-    def __init__(self, base_type, pkey=False, min_length=False,
-            max_length=False):
-        self.base_type = base_type
-        self.pkey = pkey
-        self.min_length = min_length
-        self.max_length = max_length
-
-    def control(self, value):
-        """Return whether the value is correct for these constraints."""
-        if self.min_length and len(value) < self.min_length:
-            return False
-
-        if self.max_length and len(value) > self.max_length:
-            return False
-
-        return True
+    schema = Schema("sqlite3", definition={
+            "location": Data("the database's location, a file",
+                    default="~/aboard/sqlite.db"),
+    })
+    default_file = "dc/yaml/parameters.yml"

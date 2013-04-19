@@ -64,7 +64,7 @@ class Table:
     def __repr__(self):
         ret = "<table {} (".format(self.name)
         first = True
-        for name, constraint in self.fields:
+        for name, constraint in self.fields.items():
             if not first:
                 ret += "\n"
 

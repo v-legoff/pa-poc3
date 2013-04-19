@@ -45,8 +45,8 @@ class BaseConstraint:
         self.base_type = base_type
 
     def __str__(self):
-        return type(self).base_name + " " + self.constraints_on(
-                type(self).constraints)
+        return type(self).name_type + " " + self.constraints_on(
+                *type(self).constraints)
 
     def has(self, name):
         """Return True if this constraint is ON."""
@@ -72,7 +72,7 @@ class BaseConstraint:
 
     def constraints_on(self, *names):
         """Display a list of constraints."""
-        contraints = []
+        constraints = []
         for name in names:
             value = self.constraint_on(name)
             if value:

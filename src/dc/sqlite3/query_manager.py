@@ -26,35 +26,20 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the StringConstraint class, defined below."""
+"""Module defining the Sqlite3QueryManager class, defined below."""
 
-from model.constraints.base import BaseConstraint
+from dc.query_manager import QueryManager
+from model.functions import *
 
-class StringConstraint(BaseConstraint):
+class Sqlite3QueryManager(QueryManager):
 
-    """Class representing constraint on a String field type.
+    """Class representing the sqlite3 query manager, used to interpret queries.
 
-    Strings have the following constraints:
-        min_length -- the minimum length
-        max_length -- the maximum length
+    Generic queries are converted into SQL that can be interpreted by Sqlite3.
 
     """
 
-    name_type = "string"
-    constraints = ["pkey", "min_length", "max_length"]
-    def __init__(self, base_type, pkey=False, min_length=False,
-            max_length=False):
-        self.base_type = base_type
-        self.pkey = pkey
-        self.min_length = min_length
-        self.max_length = max_length
-
-    def control(self, value):
-        """Return whether the value is correct for these constraints."""
-        if self.min_length and len(value) < self.min_length:
-            return False
-
-        if self.max_length and len(value) > self.max_length:
-            return False
-
-        return True
+    def query(self, query):
+        """Look for the specified objects."""
+        model = query.first_model
+        name = get_name(model)

@@ -63,6 +63,7 @@ class RepositoryManager(metaclass=ABCMeta):
         be a model.
 
         """
+        self.models = {}
         for model in models:
             self.record_model(model)
 
@@ -76,19 +77,42 @@ class RepositoryManager(metaclass=ABCMeta):
         """Force the data connector to save."""
         pass
 
-    @abstractmethod
     def get_all_objects(self, model):
         """Return all the model's object in a list."""
-        pass
+        name = get_name(model)
+        plural_name = get_plural_name(model)
+        names = get_pkey_names(model)
+        lines = self.driver.query_for_lines(plural_name)
+        objects = []
+        for line in lines:
+            pkey_attrs = dict((name, line[name]) for name in names)
+            model_object = self.get_from_cache(model, pkey_attrs)
+            if model_object is not None:
+                objects.append(model_object)
+            else:
+                objects.append(self.storage_to_object(name, line))
 
-    @abstractmethod
+        return objects
+
     def find_object(self, model, pkey_values):
         """Return, if found, the selected object.
 
         Raise a model.exceptions.ObjectNotFound if not found.
 
         """
-        pass
+        # First we try go get the object from cache
+        model_object = self.get_from_cache(model, pkey_values)
+        if model_object is not None:
+            return model_object
+
+        # Then we try to query from the driver
+        name = get_name(model)
+        plural_name = get_plural_name(model)
+        line = self.driver.query_for_line(plural_name, pkey_values)
+        if line is None:
+            raise mod_exceptions.ObjectNotFound(model, pkey_values)
+
+        return self.storage_to_object(name, line)
 
     @abstractmethod
     def add_object(self, model_object):
@@ -114,15 +138,23 @@ class RepositoryManager(metaclass=ABCMeta):
         self.check_update(model_object)
         field = getattr(type(model_object), attribute)
         value = getattr(model_object, attribute)
-        identifiers = get_pkey_values(model_object, {attribute: old_value})
+        identifiers = {}
+        for pkey_name in get_pkey_names(type(model_object)):
+            identifiers[pkey_name] = getattr(model_object, pkey_name)
+        if attribute in identifiers:
+            identifiers[attribute] = old_value
+
         name = get_plural_name(type(model_object))
+
         self.driver.update_line(name, identifiers, attribute, value)
         self.update_cache(model_object, field, old_value)
 
     def remove_object(self, model_object):
         """Delete object from cache."""
         name = get_plural_name(type(model_object))
-        identifiers = get_pkey_values(model_object)
+        identifiers = {}
+        for pkey_name in get_pkey_names(type(model_object)):
+            identifiers[pkey_name] = getattr(model_object, pkey_name)
         self.driver.remove_line(name, identifiers)
         self.uncache_object(model_object)
 
