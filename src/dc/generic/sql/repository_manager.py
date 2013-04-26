@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,25 +26,34 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module defining the Sqlite3Connector class."""
+"""Module defining the SQLRepositoryManager class."""
 
-from dc.connector import DataConnector
-from dc.sqlite3.configuration import Sqlite3Configuration
-from dc.sqlite3.driver import Sqlite3Driver
-from dc.sqlite3.query_manager import Sqlite3QueryManager
-from dc.sqlite3.repository_manager import Sqlite3RepositoryManager
+from dc.repository_manager import RepositoryManager
+from dc import exceptions
+from model.functions import *
 
-class Sqlite3Connector(DataConnector):
+class SQLRepositoryManager(RepositoryManager):
 
-    """Data connector for sqlite3.
+    """Generic repository manager for SQL."""
 
-    This data connector should read and write datas using the sqlite3
-    module (part of the python standard library).
+    def record_model(self, model):
+        """Record the given model."""
+        RepositoryManager.record_model(self, model)
+        table = self.build_table(model)
+        self.driver.add_table(table)
 
-    """
+    def save(self):
+        """Commit the database connexion."""
+        self.driver.connection.commit()
 
-    name = "sqlite3"
-    configuration = Sqlite3Configuration
-    driver = Sqlite3Driver
-    repository_manager = Sqlite3RepositoryManager
-    query_manager = Sqlite3QueryManager
+    def add_object(self, model_object):
+        """Save the object, issued from a model."""
+        RepositoryManager.add_object(self, model_object)
+
+    def update_object(self, model_object, attribute, old_value):
+        """Update an object."""
+        RepositoryManager.update_object(self, model_object, attribute, old_value)
+
+    def remove_object(self, model_object):
+        """Delete the object."""
+        RepositoryManager.remove_object(self, model_object)

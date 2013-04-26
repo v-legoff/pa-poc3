@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,25 +26,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module defining the Sqlite3Connector class."""
+"""This package contains the generic data connector to manipulate SQL queries.
 
-from dc.connector import DataConnector
-from dc.sqlite3.configuration import Sqlite3Configuration
-from dc.sqlite3.driver import Sqlite3Driver
-from dc.sqlite3.query_manager import Sqlite3QueryManager
-from dc.sqlite3.repository_manager import Sqlite3RepositoryManager
+This data connector uses a driver comliant with the DB-aPI 2.0 standard.
+You can create a data connector by inheriting of the three classes constituting
+a data connector (driver, query manager and repository manager).
 
-class Sqlite3Connector(DataConnector):
-
-    """Data connector for sqlite3.
-
-    This data connector should read and write datas using the sqlite3
-    module (part of the python standard library).
-
-    """
-
-    name = "sqlite3"
-    configuration = Sqlite3Configuration
-    driver = Sqlite3Driver
-    repository_manager = Sqlite3RepositoryManager
-    query_manager = Sqlite3QueryManager
+"""

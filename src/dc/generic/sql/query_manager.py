@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,25 +26,24 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module defining the Sqlite3Connector class."""
+"""Module defining the SqLQueryManager class, defined below."""
 
-from dc.connector import DataConnector
-from dc.sqlite3.configuration import Sqlite3Configuration
-from dc.sqlite3.driver import Sqlite3Driver
-from dc.sqlite3.query_manager import Sqlite3QueryManager
-from dc.sqlite3.repository_manager import Sqlite3RepositoryManager
+from dc.query_manager import QueryManager
+from model.functions import *
 
-class Sqlite3Connector(DataConnector):
+class SQLQueryManager(QueryManager):
 
-    """Data connector for sqlite3.
+    """Generic class for the query manager using sQL queries.
 
-    This data connector should read and write datas using the sqlite3
-    module (part of the python standard library).
+    This class is supposed to deal with generic queries and convert them in
+    SQL queries, supported by MOST of the potential SQL drivers.  Note,
+    however, that all SQL libraries do not support each functionalities
+    (or suport them the same way).  Therefore, this class should
+    be inherited to integrate specific behaviors.
 
     """
 
-    name = "sqlite3"
-    configuration = Sqlite3Configuration
-    driver = Sqlite3Driver
-    repository_manager = Sqlite3RepositoryManager
-    query_manager = Sqlite3QueryManager
+    def query(self, query):
+        """Look for the specified objects."""
+        model = query.first_model
+        name = get_name(model)

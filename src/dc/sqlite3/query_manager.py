@@ -28,10 +28,9 @@
 
 """Module defining the Sqlite3QueryManager class, defined below."""
 
-from dc.query_manager import QueryManager
-from model.functions import *
+from dc.generic.sql.query_manager import SQLQueryManager
 
-class Sqlite3QueryManager(QueryManager):
+class Sqlite3QueryManager(SQLQueryManager):
 
     """Class representing the sqlite3 query manager, used to interpret queries.
 
@@ -39,7 +38,4 @@ class Sqlite3QueryManager(QueryManager):
 
     """
 
-    def query(self, query):
-        """Look for the specified objects."""
-        model = query.first_model
-        name = get_name(model)
+    pass

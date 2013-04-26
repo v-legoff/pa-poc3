@@ -28,33 +28,11 @@
 
 """Module defining the Sqlite3RepositoryManager class."""
 
-from dc.repository_manager import RepositoryManager
-from dc import exceptions
+from dc.generic.sql.repository_manager import SQLRepositoryManager
 from model.functions import *
 
-class Sqlite3RepositoryManager(RepositoryManager):
+class Sqlite3RepositoryManager(SQLRepositoryManager):
 
     """Repository manager for sqlite3."""
 
-
-    def record_model(self, model):
-        """Record the given model."""
-        RepositoryManager.record_model(self, model)
-        table = self.build_table(model)
-        self.driver.add_table(table)
-
-    def save(self):
-        """Commit the database connexion."""
-        self.driver.connection.commit()
-
-    def add_object(self, model_object):
-        """Save the object, issued from a model."""
-        RepositoryManager.add_object(self, model_object)
-
-    def update_object(self, model_object, attribute, old_value):
-        """Update an object."""
-        RepositoryManager.update_object(self, model_object, attribute, old_value)
-
-    def remove_object(self, model_object):
-        """Delete the object."""
-        RepositoryManager.remove_object(self, model_object)
+    pass
