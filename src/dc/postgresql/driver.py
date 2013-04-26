@@ -26,91 +26,92 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module defining the Sqlite3Driver class."""
+"""Module defining the PostgreSQLDriver class."""
 
 import os
 
 driver = True
 
 try:
-    import sqlite3
+    import postgresql
 except ImportError:
     driver = False
 
 from dc.generic.sql.driver import SQLDriver
 from dc import exceptions
 
-class Sqlite3Driver(SQLDriver):
+class PostgreSQLDriver(SQLDriver):
 
-    """Driver for sqlite3.
+    """Driver for PostgreSQL.
 
     As any driver, this one is only responsible for the communication
     between the Python Aboard's data layer (not the model's one) and
-    the data storage (one sqlite database, as a file, with several tables
-    inside it).
+    the data storage (one PostgreSQL database with several tables
+    in it).
 
     """
 
     SQL_TYPES = {
-        "integer": "integer",
+        "integer": "numeric",
         "string": "text",
     }
 
     def __init__(self):
         SQLDriver.__init__(self)
-        self.location = None
+        self.format = "${}"
 
     def can_run(self):
-        """Return whether the sqlite3 driver can run."""
+        """Return whether the postgresql driver can run."""
         return driver
 
     def open(self, configuration):
         """Open the connexion."""
-        location = configuration["location"]
-        location = location.replace("\\", "/")
-        if location.startswith("~"):
-            location = os.path.expanduser("~") + location[1:]
-        parent = os.path.dirname(location)
-        if not os.path.exists(parent):
-            os.makedirs(parent)
-
-        if not os.access(parent, os.R_OK):
-            raise exceptions.DriverInitializationError(
-                    "cannot read in {}".format(parent))
-        if not os.access(parent, os.W_OK):
-            raise exceptions.DriverInitializationError(
-                    "cannot write in {}".format(parent))
-
-        self.location = location
-        self.connection = sqlite3.connect(self.location)
+        host = configuration["host"]
+        port = configuration["port"]
+        dbuser = configuration["dbuser"]
+        dbpass = configuration["dbpass"]
+        dbname = configuration["dbname"]
+        self.connection = postgresql.open(
+                "pq://{user}:{password}@{host}:{port}/{database}".format(
+                user=dbuser, password=dbpass, host=host, port=port,
+                database=dbname))
         SQLDriver.open(self, configuration)
 
     def destroy(self):
         """Erase EVERY stored data."""
+        self.clear()
         self.connection.close()
-        os.remove(self.location)
 
     def check_existing_tables(self):
         """Get the created tables."""
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        tables = [row[0] for row in cursor.fetchall()]
-        for name in tables:
+        query = "SELECT table_name FROM information_schema.tables"
+        statement = self.connection.prepare(query)
+        for row in statement():
+            name = row[0]
             self.tables[name] = None
 
+    def instruction_create_field(self, field_name, constraint):
+        """Return the instruction used to create a simple field."""
+        sql_field = type(self).SQL_TYPES[constraint.name_type]
+        if constraint.has("auto_increment"):
+            sql_field = "SERIAL"
+        if constraint.has("pkey"):
+            sql_field += " PRIMARY KEY"
+        instruction = field_name + " " + sql_field
+        return instruction
+
     def execute_query(self, statement, *args, many=True):
-        """Execute a query and return the answer, if any.
-
-        This method uses the sqlite cursors.
-
-        """
-        cursor = self.connection.cursor()
-        cursor.execute(statement, tuple(args))
+        """Execute a query and return the answer, if any."""
+        preparation = self.connection.prepare(statement)
         if many:
-            return cursor.fetchall()
+            return preparation(*args)
         else:
-            return cursor.fetchone()
+            result = preparation(*args)
+            if len(result) > 0:
+                return result[0]
+
+            return None
 
     def save(self):
         """Force the database saving."""
-        self.connection.commit()
+        pass

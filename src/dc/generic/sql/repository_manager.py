@@ -44,7 +44,7 @@ class SQLRepositoryManager(RepositoryManager):
 
     def save(self):
         """Commit the database connexion."""
-        self.driver.connection.commit()
+        self.driver.save()
 
     def add_object(self, model_object):
         """Save the object, issued from a model."""

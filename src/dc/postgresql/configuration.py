@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,25 +26,24 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module defining the PostgreSQLConnector class."""
+"""Module containing the default configuration for the 'postgresql' DC."""
 
-from dc.connector import DataConnector
-from dc.postgresql.configuration import PostgreSQLConfiguration
-from dc.postgresql.driver import PostgreSQLDriver
-from dc.postgresql.query_manager import PostgreSQLQueryManager
-from dc.postgresql.repository_manager import PostgreSQLRepositoryManager
+from configuration import *
 
-class PostgreSQLConnector(DataConnector):
+class PostgreSQLConfiguration(Configuration):
 
-    """Data connector for PostgreSQL.
+    """Class defining the default configuration for the postgresql DC."""
 
-    This data connector should read and write datas using the py-postgresql
-    module: http://pypi.python.org/pypi/py-postgresql
-
-    """
-
-    name = "postgresql"
-    configuration = PostgreSQLConfiguration
-    driver = PostgreSQLDriver
-    repository_manager = PostgreSQLRepositoryManager
-    query_manager = PostgreSQLQueryManager
+    schema = Schema("postgresql", definition={
+            "host": Data("the hostname or IP where the database server is",
+                    default="127.0.0.1"),
+            "port": Data("the port on which the database server listens",
+                    default=5432, type=int),
+            "dbuser": Data("the database user",
+                    default="postgres"),
+            "dbpass": Data("the user's password on the database server",
+                    default=""),
+            "dbname": Data("the database name",
+                    default="aboard"),
+    })
+    default_file = "dc/postgresql/parameters.yml"

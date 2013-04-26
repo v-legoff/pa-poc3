@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,25 +26,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module defining the PostgreSQLConnector class."""
+"""Module defining the PostgreSQLRepositoryManager class."""
 
-from dc.connector import DataConnector
-from dc.postgresql.configuration import PostgreSQLConfiguration
-from dc.postgresql.driver import PostgreSQLDriver
-from dc.postgresql.query_manager import PostgreSQLQueryManager
-from dc.postgresql.repository_manager import PostgreSQLRepositoryManager
+from dc.generic.sql.repository_manager import SQLRepositoryManager
+from model.functions import *
 
-class PostgreSQLConnector(DataConnector):
+class PostgreSQLRepositoryManager(SQLRepositoryManager):
 
-    """Data connector for PostgreSQL.
+    """Repository manager for PostgreSQL."""
 
-    This data connector should read and write datas using the py-postgresql
-    module: http://pypi.python.org/pypi/py-postgresql
-
-    """
-
-    name = "postgresql"
-    configuration = PostgreSQLConfiguration
-    driver = PostgreSQLDriver
-    repository_manager = PostgreSQLRepositoryManager
-    query_manager = PostgreSQLQueryManager
+    pass

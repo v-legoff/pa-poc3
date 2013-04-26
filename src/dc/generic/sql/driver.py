@@ -45,6 +45,22 @@ class SQLDriver(Driver):
         self.tables = {}
         self.connection = None
 
+    def generate_formats(self, nb):
+        """Generate a tuple of formatted values.
+
+        The format is a string containing something like "?" or "*{}".
+        If the second is choosen, different formats are used, depending
+        on the given number.  For instance, if the format is "${}" and
+        we call 'generate_format' with the parameter at 5, we should
+        obtain ("$1", "$2", "$3", "$4", "$5").
+
+        """
+        formats = []
+        for i in range(nb):
+            formats.append(self.format.format(i + 1))
+
+        return formats
+
     def open(self, configuration):
         """Open the connection.
 
@@ -63,10 +79,9 @@ class SQLDriver(Driver):
 
     def clear(self):
         """Clear (delete) the stored datas."""
-        cursor = self.connection.cursor()
         for name, table in self.tables.items():
             if table is not None:
-                cursor.execute("DROP TABLE {}".format(name))
+                self.execute_query("DROP TABLE {}".format(name))
         self.tables = {}
 
     def destroy(self):
@@ -76,6 +91,15 @@ class SQLDriver(Driver):
     @abstractmethod
     def check_existing_tables(self):
         """Get the created tables."""
+        pass
+
+    @abstractmethod
+    def execute_query(self, statement, *args, many=True):
+        """Execute a query and return the answer, if any.
+
+        This method mst be redefined by redefined by the definitive driver.
+
+        """
         pass
 
     def add_table(self, table):
@@ -93,8 +117,7 @@ class SQLDriver(Driver):
                 sql_fields.append(instruction)
 
             query = "CREATE TABLE {} ({})".format(name, ", ".join(sql_fields))
-            cursor = self.connection.cursor()
-            cursor.execute(query)
+            self.execute_query(query)
 
     def instruction_create_field(self, field_name, constraint):
         """Return the instruction used to create a simple field."""
@@ -115,10 +138,9 @@ class SQLDriver(Driver):
         """
         table = self.tables[table_name]
         query = "SELECT * FROM " + table_name
-        cursor = self.connection.cursor()
-        cursor.execute(query)
+        rows = self.execute_query(query)
         lines = []
-        for row in cursor.fetchall():
+        for row in rows:
             line = {}
             for i, field_name in enumerate(table.fields.keys()):
                 line[field_name] = row[i]
@@ -138,14 +160,14 @@ class SQLDriver(Driver):
         query = "SELECT * FROM {} WHERE ".format(table_name)
         params = []
         filters = []
-        for name, value in identifiers.items():
-            filters.append("{}={}".format(name, self.format))
+        formats = self.generate_formats(len(identifiers))
+        for i, (name, value) in enumerate(identifiers.items()):
+            format = formats[i]
+            filters.append("{}={}".format(name, format))
             params.append(value)
 
         query += " AND ".join(filters)
-        cursor = self.connection.cursor()
-        cursor.execute(query, tuple(params))
-        row = cursor.fetchone()
+        row = self.execute_query(query, *params, many=False)
         if row is None:
             return None
 
@@ -172,38 +194,43 @@ class SQLDriver(Driver):
             values.append(line[field_name])
 
         query += ", ".join(names) + ") values("
-        query += ", ".join(self.format * len(values)) + ")"
-        cursor = self.connection.cursor()
-        cursor.execute(query, tuple(values))
+        query += ", ".join(self.generate_formats(len(values))) + ")"
+        self.execute_query(query, *values)
 
         for field in auto_increments:
             query = "SELECT max(" + field + ") FROM " + table_name
-            cursor.execute(query)
-            row = cursor.fetchone()
+            row = self.execute_query(query, many=False)
             value = row[0]
             ret[field] = value
 
-        self.connection.commit()
+        self.save()
         return ret
 
     def update_line(self, table_name, identifiers, element, value):
         """Update a line (does nothing)."""
         params = [value]
         params.extend(identifiers.values())
-        names = [name + "={}".format(self.format) for name in identifiers]
-        query = "UPDATE " + table_name + " SET " + element + "=" + self.format
+        names = []
+        formats = self.generate_formats(len(params))
+        for i, name in enumerate(identifiers):
+            format = formats[i + 1]
+            names.append(name + "={}".format(format))
+
+        query = "UPDATE " + table_name + " SET " + element + "=" + formats[0]
         query += " WHERE " + " AND ".join(names)
-        cursor = self.connection.cursor()
-        cursor.execute(query, tuple(params))
-        self.connection.commit()
+        self.execute_query(query, *params)
+        self.save()
 
     def remove_line(self, table_name, identifiers):
         """Delete the line (do nothing)."""
-        names = tuple(name + "={}".format(self.format) for name in \
-                identifiers.keys())
+        names = []
+        formats = self.generate_formats(len(identifiers))
+        for i, name in enumerate(identifiers):
+            format = formats[i]
+            names.append(name + "={}".format(format))
+
         values = tuple(identifiers.values())
         query = "DELETE FROM " + table_name
         query += " WHERE " + " AND ".join(names)
-        cursor = self.connection.cursor()
-        cursor.execute(query, values)
-        self.connection.commit()
+        self.execute_query(query, *values)
+        self.save()
