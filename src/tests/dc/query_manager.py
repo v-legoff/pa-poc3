@@ -66,3 +66,13 @@ class AbstractQMTest:
         result = query.execute(many=False)
         self.assertEqual(user.username, result.username)
         self.assertIs(result, user)
+
+    def test_connector_and(self):
+        """Test that the 'and' connector works for the query manager."""
+        repository = User._repository
+        user = repository.create(username="Other", password="asis")
+        query = repository.query()
+        query.filter("username = ?", "Other")
+        query.filter("password = ?", "asis")
+        result = query.execute(many=False)
+        self.assertIs(result, user)
