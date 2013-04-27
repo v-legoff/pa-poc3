@@ -67,6 +67,17 @@ class AbstractQMTest:
         self.assertEqual(user.username, result.username)
         self.assertIs(result, user)
 
+    def test_op_notequal(self):
+        """Test that the query manager correctly interpret the != operator."""
+        repository = User._repository
+        kyra = repository.create(username="Kyra", password="just guess")
+        carla = repository.create(username="Carla", password="***")
+        query = repository.query()
+        query.filter("username != ?", "Carla")
+        results = query.execute()
+        self.assertIn(kyra, results)
+        self.assertNotIn(carla, results)
+
     def test_connector_and(self):
         """Test that the 'and' connector works for the query manager."""
         repository = User._repository

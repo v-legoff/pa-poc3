@@ -26,16 +26,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package containing the generic query operators.
+"""Module containing the NotEqualOperator class, defined below."""
 
-Each operator should be a class inherited from query.operator.base.Operator.
+from query.operators.base import Operator
 
-"""
+class NotEqualOperator(Operator):
 
-from query.operators.equal import EqualOperator
-from query.operators.notequal import NotEqualOperator
+    """Generic query operator to represent a not equal comparison.
 
-OPERATORS = {}
+    In Python language, this operator would be a '!=' sign.
 
-for operator in [EqualOperator, NotEqualOperator]:
-    OPERATORS[operator.compile_regular_expression()] = operator
+    """
+
+    name = "!="
+    expression = "{field}{operator}{}"

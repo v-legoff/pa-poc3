@@ -89,6 +89,7 @@ class SQLQueryManager(QueryManager):
         operator = filter.operator.name
         methods = {
                 "=": self.op_equal,
+                "!=": self.op_notequal,
         }
 
         return methods[operator](filter, formats)
@@ -96,3 +97,7 @@ class SQLQueryManager(QueryManager):
     def op_equal(self, filter, formats):
         """Return the statement corresponding to the equal (=) operator."""
         return filter.field + "=" + formats[0]
+
+    def op_notequal(self, filter, formats):
+        """Return the statement corresponding to the notequal (!=) operator."""
+        return filter.field + "!=" + formats[0]

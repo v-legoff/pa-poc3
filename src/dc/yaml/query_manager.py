@@ -59,10 +59,16 @@ class YAMLQueryManager(QueryManager):
         """Simply return the equal comparison."""
         return field == value
 
+    @staticmethod
+    def notequal(field, value):
+        """Simply return the not equal comparison."""
+        return field != value
+
     def find_operator(self, operator):
         """Return a function used to compare datas."""
         operators = {
             "=": self.equal,
+            "!=": self.notequal,
         }
 
         return operators[operator]

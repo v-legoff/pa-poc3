@@ -77,13 +77,15 @@ class MongoQueryManager(QueryManager):
     def get_expression_from_filter(self, filter):
         """Return a simple expression (dictionary) from a filter."""
         operator = filter.operator.name
-        converted_ops = {}
+        converted_ops = {
+            "!=": self.notequal,
+        }
         if operator == "=":
             return {filter.field: filter.parameters[0]}
         else:
             converted_op = converted_ops[operator](filter)
             return {filter.field: converted_op, }
 
-    def not_equal(self, filter):
+    def notequal(self, filter):
         """Return the corresponding dictionary for the != operator."""
         return {"$ne": filter.parameters[0]}

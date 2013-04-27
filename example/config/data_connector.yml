@@ -1,5 +1,5 @@
 # Data connector name
-dc_name: yaml
+dc_name: mongo
 
 # Database location, a directory
-location: ~/aboard/yaml
+#location: ~/aboard/sqlite.db
