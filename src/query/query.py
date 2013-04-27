@@ -82,6 +82,13 @@ class Query:
 
         self.connectors.append(connector)
 
-    def execute(self):
+    def execute(self, many=True):
         """Execute the query."""
-        return self.data_connector.query_manager.query(self)
+        result = self.data_connector.query_manager.query_objects(self)
+        if many:
+            return result
+
+        if isinstance(result, list):
+            return result[0]
+
+        return None

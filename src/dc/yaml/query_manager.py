@@ -67,11 +67,12 @@ class YAMLQueryManager(QueryManager):
 
         return operators[operator]
 
-    def query(self, query):
+    def query_objects(self, query):
         """Look for the specified objects."""
         model = query.first_model
         name = get_name(model)
-        objects = list(self.data_connector.objects_tree.get(name, {}).values())
+        objects = list(self.repository_manager.objects_tree.get(
+                name, {}).values())
 
         # Add simple filters
         for filter in query.filters:

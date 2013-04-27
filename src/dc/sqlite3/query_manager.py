@@ -38,4 +38,6 @@ class Sqlite3QueryManager(SQLQueryManager):
 
     """
 
-    pass
+    def op_equal(self, filter, formats):
+        """Return the statement corresponding to the equal (=) operator."""
+        return filter.field + "=?"

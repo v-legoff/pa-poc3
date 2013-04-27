@@ -43,4 +43,40 @@ class MongoQueryManager(QueryManager):
     def query(self, query):
         """Look for the specified objects."""
         model = query.first_model
-        name = get_name(model)
+        plural_name = get_plural_name(model)
+        expression = self.get_expression(query)
+        print("Expression", expression)
+        return list(self.driver.datas[plural_name].find(expression))
+
+    def get_expression(self, query):
+        """Return the list containing the MongoDB expression."""
+        and_expression = []
+        or_expression = []
+        for i, filter in enumerate(query.filters):
+            if i > 0:
+                connector = query.connectors[i]
+                if connector == "or":
+                    or_expression.append(
+                            self.get_expression_from_filter(filter))
+                    continue
+
+            and_expression.append(self.get_expression_from_filter(filter))
+
+        expression = {}
+        if and_expression:
+            expression["$and"] = and_expression
+        if or_expression:
+            expression["$or"] = or_expression
+
+        return expression
+
+    def get_expression_from_filter(self, filter):
+        """Return a simple expression (dictionary) from a filter."""
+        operator = filter.operator.name
+        converted_ops = {}
+        if operator == "=":
+            return {filter.field: filter.parameters[0]}
+        else:
+            converted_op = converted_ops[operator]
+            parameter = filter.parameters[0]
+            return {filter.field: {converted_op, parameter}}

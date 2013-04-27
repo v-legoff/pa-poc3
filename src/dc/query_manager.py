@@ -30,6 +30,8 @@
 
 from abc import *
 
+from model.functions import *
+
 class QueryManager(metaclass=ABCMeta):
 
     """Abstract class to represent a query manager for a connector.
@@ -46,15 +48,35 @@ class QueryManager(metaclass=ABCMeta):
         self.driver = driver
         self.repository_manager = repository_manager
 
-    @abstractmethod
-    def query(self, query):
+    def query_objects(self, query):
         """Return a list of model objects filtered by the query.
 
         In this method are performed the query convertion to something
-        the data connector could understand and use.  If the provided
-        data connector is not bound to a query system (it can't find
-        specific objects, for instance), the cache should be used to
-        retrieve the results.
+        the data connector could understand and use.  The repository
+        manager's cache could be used to retrieve the corresponding
+        object, but first we have to query for the specific result.
+        Therefore, this method should not be redefined in a subclass,
+        rather redefine the 'query' method.  Sometimes, though, it could
+        be smarter to redefine this method (if you have a data connector
+        that only relies on the cache, for instance).
+
+        """
+        lines = self.query(query)
+        objects = []
+        name = get_name(query.first_model)
+        for line in lines:
+            model_object = self.repository_manager.get_or_build_object(
+                    name, line)
+            objects.append(model_object)
+
+        return objects
+
+    def query(self, query):
+        """Query for the specified query.
+
+        This time, instead of returning objects, we return lines (list of
+        list).  This method is, therefore, closer to the driver and
+        should not use the Python Aboard's model layer.
 
         """
         pass

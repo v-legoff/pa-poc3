@@ -28,6 +28,8 @@
 
 """Module defining the SqLQueryManager class, defined below."""
 
+from abc import *
+
 from dc.query_manager import QueryManager
 from model.functions import *
 
@@ -46,4 +48,52 @@ class SQLQueryManager(QueryManager):
     def query(self, query):
         """Look for the specified objects."""
         model = query.first_model
-        name = get_name(model)
+        plural_name = get_plural_name(model)
+        table = self.driver.tables[plural_name]
+        fields = table.fields
+        statement = "SELECT * FROM {}".format(plural_name)
+        if query.filters:
+            statement += " WHERE "
+
+        values = []
+        list_formats = self.driver.generate_formats(
+                sum(len(filter.parameters) for filter in query.filters))
+        j = 0
+        for i, filter in enumerate(query.filters):
+            formats = []
+            for parameter in filter.parameters:
+                formats.append(list_formats[j])
+                j += 1
+
+            if i != 0:
+                connector = query.connectors[i - 1]
+                statement += " " + connector.upper() + " "
+
+            statement += self.get_statement_from_filter(filter, formats)
+            values.extend(filter.parameters)
+
+        print("Statement", statement, values)
+        lines = self.driver.execute_query(statement, *values)
+        dict_lines = []
+        for line in lines:
+            dict_line = {}
+            for i, field_name in enumerate(fields):
+                value = line[i]
+                dict_line[field_name] = value
+            dict_lines.append(dict_line)
+
+        return dict_lines
+
+    def get_statement_from_filter(self, filter, formats):
+        """Return the corresponding statement."""
+        operator = filter.operator.name
+        methods = {
+                "=": self.op_equal,
+        }
+
+        return methods[operator](filter, formats)
+
+    @abstractmethod
+    def op_equal(self, filter, formats):
+        """Return the statement corresponding to the equal (=) operator."""
+        pass

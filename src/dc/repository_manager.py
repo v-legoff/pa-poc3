@@ -73,6 +73,23 @@ class RepositoryManager(metaclass=ABCMeta):
         self.models[name] = model
         self.objects_tree[name] = {}
 
+    def get_or_build_object(self, model_name, line):
+        """Get or build the corresponding models based on the line.
+
+        The line is a dictionary of parameters.  If the object is in the
+        cache, then return it.  Otherwise, return a newly created (and
+        cached) model object.
+
+        """
+        model = self.models[model_name]
+        cached = self.get_from_cache(model, line)
+        if cached:
+            return cached
+
+        model_object = model(**line)
+        self.cache_object(model_object)
+        return model_object
+
     def save(self):
         """Force the data connector to save."""
         pass

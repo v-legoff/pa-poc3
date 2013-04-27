@@ -26,19 +26,43 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Module defining the PostgreSQLQueryManager class, defined below."""
+"""This module contains a generic class for testing query managers.
 
-from dc.generic.sql.query_manager import SQLQueryManager
+You can actually test your data connector without testing the 'querying'
+part.  This is a good start for development but of course, in the end,
+a data connector should implement ALL possibilities of the query
+manager.  These possibilities are tested in this file.
 
-class PostgreSQLQueryManager(SQLQueryManager):
+So if you want to test you data connector and query manager, simply
+inherit your class from AbstractQMTest as well as from AbstractDCTest.
 
-    """Class representing the sqlite3 query manager, used to interpret queries.
+"""
 
-    Generic queries are converted into SQL that can be interpreted by Sqlite3.
+from model.functions import *
+from tests.model import *
+
+class AbstractQMTest:
+
+    """Abstract class for testing query managers.
+
+    This class is abstract.  It shouldn't be considered a regular
+    test case and doesn't have enough informations to perform a test.
+    It's a base test for a data connector (each data connector should
+    have a class inherited from it as well as from DCTest).  This allows
+    to test different data connectors to check that each one has the same
+    abilities as any other one.
+
+    Testing methods (some could be added, NOT MODIFIED):
+        test_op_equal -- test the equal (=) operator
 
     """
 
-
-    def op_equal(self, filter, formats):
-        """Return the statement corresponding to the equal (=) operator."""
-        return filter.field + "=" + formats[0]
+    def test_op_equal(self):
+        """Test that the query manager correctly interpret the = operator."""
+        repository = User._repository
+        user = repository.create(username="Kredh", password="fore123")
+        query = repository.query()
+        query.filter("username = ?", "Kredh")
+        result = query.execute(many=False)
+        self.assertEqual(user.username, result.username)
+        self.assertIs(result, user)
