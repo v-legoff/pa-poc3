@@ -93,7 +93,6 @@ class SQLQueryManager(QueryManager):
 
         return methods[operator](filter, formats)
 
-    @abstractmethod
     def op_equal(self, filter, formats):
         """Return the statement corresponding to the equal (=) operator."""
-        pass
+        return filter.field + "=" + formats[0]

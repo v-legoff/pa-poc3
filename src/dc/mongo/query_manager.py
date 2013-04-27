@@ -58,6 +58,10 @@ class MongoQueryManager(QueryManager):
                 if connector == "or":
                     or_expression.append(
                             self.get_expression_from_filter(filter))
+                    if and_expression:
+                        or_expression.append(and_expression[-1])
+                        del and_expression[-1]
+
                     continue
 
             and_expression.append(self.get_expression_from_filter(filter))
@@ -77,6 +81,9 @@ class MongoQueryManager(QueryManager):
         if operator == "=":
             return {filter.field: filter.parameters[0]}
         else:
-            converted_op = converted_ops[operator]
-            parameter = filter.parameters[0]
-            return {filter.field: {converted_op, parameter}}
+            converted_op = converted_ops[operator](filter)
+            return {filter.field: converted_op, }
+
+    def not_equal(self, filter):
+        """Return the corresponding dictionary for the != operator."""
+        return {"$ne": filter.parameters[0]}
