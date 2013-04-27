@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,37 +26,21 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This file contains the Console class (console tool)."""
+"""Module defining the MongoQueryManager class, defined below."""
 
-from code import InteractiveConsole
-import sys
-import traceback
+from dc.query_manager import QueryManager
+from model.functions import *
 
-from model import Model
+class MongoQueryManager(QueryManager):
 
-class Console:
+    """Class representing the mongo query manager used to interpret queries.
 
-    """Console tool."""
+    The generic queries are converted into something pymongo (and by
+    extension MongoDB) can understand and interpret.
 
-    def __init__(self, globals):
-        self.globals = globals
-        self.console = InteractiveConsole(self.globals)
-        self.prompt = ">>> "
+    """
 
-    def launch(self):
-        """Launch the tool."""
-        running = True
-        while running:
-            try:
-                code = input(self.prompt)
-            except (KeyboardInterrupt, EOFError):
-                running = False
-                break
-
-            try:
-                ret = self.console.push(code)
-            except Exception:
-                print(traceback.format_exc())
-            else:
-                self.prompt = "... " if ret else ">>> "
-                Model.data_connector.repository_manager.save()
+    def query(self, query):
+        """Look for the specified objects."""
+        model = query.first_model
+        name = get_name(model)

@@ -247,6 +247,9 @@ class RepositoryManager(metaclass=ABCMeta):
         values = {}
         for field in fields:
             value = getattr(model_object, field.field_name)
+            if value is getattr(type(model_object), field.field_name):
+                continue
+
             values[field.field_name] = value
 
         return self.driver.line_to_storage(plural_name, values)

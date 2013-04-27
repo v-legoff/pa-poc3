@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,37 +26,35 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This file contains the Console class (console tool)."""
+"""Module defining the PostgreSQLRepositoryManager class."""
 
-from code import InteractiveConsole
-import sys
-import traceback
+from dc.repository_manager import RepositoryManager
+from dc import exceptions
+from model import exceptions as mod_exceptions
+from model.functions import *
 
-from model import Model
+class MongoRepositoryManager(RepositoryManager):
 
-class Console:
+    """Repository manager for PostgreSQL."""
 
-    """Console tool."""
+    def record_model(self, model):
+        """Record the given model."""
+        RepositoryManager.record_model(self, model)
+        table = self.build_table(model)
+        self.driver.add_table(table)
 
-    def __init__(self, globals):
-        self.globals = globals
-        self.console = InteractiveConsole(self.globals)
-        self.prompt = ">>> "
+    def save(self):
+        """Force the repository to save, do nothing."""
+        pass
 
-    def launch(self):
-        """Launch the tool."""
-        running = True
-        while running:
-            try:
-                code = input(self.prompt)
-            except (KeyboardInterrupt, EOFError):
-                running = False
-                break
+    def add_object(self, model_object):
+        """Save the object, issued from a model."""
+        RepositoryManager.add_object(self, model_object)
 
-            try:
-                ret = self.console.push(code)
-            except Exception:
-                print(traceback.format_exc())
-            else:
-                self.prompt = "... " if ret else ">>> "
-                Model.data_connector.repository_manager.save()
+    def update_object(self, model_object, attribute, old_value):
+        """Update an object."""
+        RepositoryManager.update_object(self, model_object, attribute, old_value)
+
+    def remove_object(self, model_object):
+        """Delete the object."""
+        RepositoryManager.remove_object(self, model_object)

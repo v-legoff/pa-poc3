@@ -81,6 +81,6 @@ class ModelRule(Rule):
         bundle.models[mod_name] = mod_class
 
         # Record the new bundle in the data connector
-        self.data_connector.record_model(mod_class)
+        self.data_connector.repository_manager.record_model(mod_class)
 
         return mod_class

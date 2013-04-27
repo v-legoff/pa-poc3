@@ -28,20 +28,11 @@
 
 """Module defining the MongoConnector class."""
 
-import os
-
-driver = True
-
-try:
-    import pymongo
-except ImportError:
-    driver = False
-
 from dc.connector import DataConnector
-from dc import exceptions
 from dc.mongo.configuration import MongoConfiguration
-from model import exceptions as mod_exceptions
-from model.functions import *
+from dc.mongo.driver import MongoDriver
+from dc.mongo.query_manager import MongoQueryManager
+from dc.mongo.repository_manager import MongoRepositoryManager
 
 class MongoDBConnector(DataConnector):
 
@@ -60,6 +51,11 @@ class MongoDBConnector(DataConnector):
 
     name = "mongo"
     configuration = MongoConfiguration
+    driver = MongoDriver
+    repository_manager = MongoRepositoryManager
+    query_manager = MongoQueryManager
+
+class ToDel:
     def __init__(self):
         """Check the driver presence.
 

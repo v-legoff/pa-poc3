@@ -69,6 +69,9 @@ class Driver(metaclass=ABCMeta):
         fields = table.fields
         values = {}
         for name, constraint in fields.items():
+            if name not in line:
+                continue
+
             value = line[name]
             type_field = constraint.name_type
             if type(self).converters.get(type_field):

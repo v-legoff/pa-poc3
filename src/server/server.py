@@ -154,8 +154,9 @@ class Server:
             return
 
         dc = dc()
-        dc.setup(**dc_spec)
-        dc.running = True
+        config_path = os.path.join(self.user_directory, "config",
+                "data_connector.yml")
+        dc.setup(config_path)
         Model.data_connector = dc
         self.services.services["data_connector"].data_connector = dc
 
