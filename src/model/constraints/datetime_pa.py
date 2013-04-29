@@ -26,14 +26,24 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the model contraints."""
+"""This module contains the DateTimeConstraint class, defined below."""
 
-from model.constraints.datetime_pa import DateTimeConstraint
-from model.constraints.integer import IntegerConstraint
-from model.constraints.string_pa import StringConstraint
+from model.constraints.base import BaseConstraint
 
-CONSTRAINTS = {
-    "datetime": DateTimeConstraint,
-    "integer": IntegerConstraint,
-    "string": StringConstraint,
-}
+class DateTimeConstraint(BaseConstraint):
+
+    """Class representing constraints on a DateTime field type.
+
+    For now on, datetimes have no constraints.
+
+    """
+
+    name_type = "datetime"
+    constraints = ["pkey"]
+    def __init__(self, base_type, pkey=False):
+        self.base_type = base_type
+        self.pkey = pkey
+
+    def control(self, value):
+        """Return whether the value is correct for these constraints."""
+        return True

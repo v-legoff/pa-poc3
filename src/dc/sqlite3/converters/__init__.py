@@ -26,14 +26,4 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the model contraints."""
-
-from model.constraints.datetime_pa import DateTimeConstraint
-from model.constraints.integer import IntegerConstraint
-from model.constraints.string_pa import StringConstraint
-
-CONSTRAINTS = {
-    "datetime": DateTimeConstraint,
-    "integer": IntegerConstraint,
-    "string": StringConstraint,
-}
+"""Package defining the converters for Sqlite3."""

@@ -33,9 +33,10 @@ Each operator should be a class inherited from query.operator.base.Operator.
 """
 
 from query.operators.equal import EqualOperator
+from query.operators.lowerthan import LowerThanOperator
 from query.operators.notequal import NotEqualOperator
 
 OPERATORS = {}
 
-for operator in [EqualOperator, NotEqualOperator]:
+for operator in [EqualOperator, NotEqualOperator, LowerThanOperator]:
     OPERATORS[operator.compile_regular_expression()] = operator

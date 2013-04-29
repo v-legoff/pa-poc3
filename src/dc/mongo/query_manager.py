@@ -45,7 +45,6 @@ class MongoQueryManager(QueryManager):
         model = query.first_model
         plural_name = get_plural_name(model)
         expression = self.get_expression(query)
-        print("Expression", expression)
         return list(self.driver.datas[plural_name].find(expression))
 
     def get_expression(self, query):
@@ -79,13 +78,19 @@ class MongoQueryManager(QueryManager):
         operator = filter.operator.name
         converted_ops = {
             "!=": self.notequal,
+            "<": self.lowerthan,
         }
         if operator == "=":
             return {filter.field: filter.parameters[0]}
         else:
-            converted_op = converted_ops[operator](filter)
+            parameters = self.get_parameters_for_filter(filter)
+            converted_op = converted_ops[operator](filter, *parameters)
             return {filter.field: converted_op, }
 
-    def notequal(self, filter):
+    def notequal(self, filter, *parameters):
         """Return the corresponding dictionary for the != operator."""
-        return {"$ne": filter.parameters[0]}
+        return {"$ne": parameters[0]}
+
+    def lowerthan(self, filter, *parameters):
+        """Return the corresponding dictionary for the != operator."""
+        return {"$lt": parameters[0]}

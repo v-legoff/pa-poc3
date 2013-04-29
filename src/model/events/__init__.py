@@ -26,14 +26,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the model contraints."""
+"""Package containing the different model events.
 
-from model.constraints.datetime_pa import DateTimeConstraint
-from model.constraints.integer import IntegerConstraint
-from model.constraints.string_pa import StringConstraint
+Each event is defined in a sub-module.
 
-CONSTRAINTS = {
-    "datetime": DateTimeConstraint,
-    "integer": IntegerConstraint,
-    "string": StringConstraint,
+"""
+
+from model.events.pre_update import PreUpdateEvent
+
+EVENTS = {
+    "pre_update", PreUpdateEvent,
 }

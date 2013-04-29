@@ -38,6 +38,8 @@ inherit your class from AbstractQMTest as well as from AbstractDCTest.
 
 """
 
+from datetime import datetime
+
 from model.functions import *
 from tests.model import *
 
@@ -77,6 +79,22 @@ class AbstractQMTest:
         results = query.execute()
         self.assertIn(kyra, results)
         self.assertNotIn(carla, results)
+
+    def test_op_lowerthan(self):
+        """Test that the query manager correctly interpret the < operator."""
+        repository = Post._repository
+        post_1 = repository.create(title="post1", content="not yet",
+                published_at=datetime.strptime("2000-02-15", "%Y-%m-%d"))
+        post_2 = repository.create(title="post2", content="still not",
+                published_at=datetime.strptime("2005-12-24", "%Y-%m-%d"))
+        post_3 = repository.create(title="post3", content="ahem",
+                published_at=datetime.strptime("2013-05-01", "%Y-%m-%d"))
+        query = repository.query()
+        query.filter("published_at < ?", datetime.strptime("2008", "%Y"))
+        results = query.execute()
+        self.assertIn(post_1, results)
+        self.assertIn(post_2, results)
+        self.assertNotIn(post_3, results)
 
     def test_connector_and(self):
         """Test that the 'and' connector works for the query manager."""

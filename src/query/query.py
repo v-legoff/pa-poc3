@@ -75,6 +75,7 @@ class Query:
 
         """
         filter = Filter(expression, *parameters)
+        filter.query = self
         self.filters.append(filter)
         connector = connector.lower()
         if connector not in ("and", "or"):

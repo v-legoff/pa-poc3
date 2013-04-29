@@ -26,14 +26,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the model contraints."""
+"""Module containing the 'pre_update' Event."""
 
-from model.constraints.datetime_pa import DateTimeConstraint
-from model.constraints.integer import IntegerConstraint
-from model.constraints.string_pa import StringConstraint
+from model.events.base import Event
 
-CONSTRAINTS = {
-    "datetime": DateTimeConstraint,
-    "integer": IntegerConstraint,
-    "string": StringConstraint,
-}
+class PreUpdateEvent(Event):
+
+    """Event called before the model object is updated.
+
+    This event could be used to a specific attribute or to all the object's model attribute.

@@ -49,6 +49,7 @@ class DCTest(AbstractDCTest, TestCase):
 """
 
 import os
+from datetime import datetime
 
 import yaml
 
@@ -267,3 +268,16 @@ class AbstractDCTest:
         user = repository.create(username="Crowd")
         users = repository.get_all()
         self.assertIn(user, users)
+
+    def test_datetime(self):
+        """Test that a datetime field is well stored."""
+        repository = Post._repository
+        post = repository.create(title="Something", content="No wait",
+                published_at=datetime.now())
+        published_at = post.published_at
+        self.teardown_data_connector()
+        self.setup_data_connector()
+        post = repository.find(post.id)
+        stored = round(published_at.timestamp(), 2)
+        published_at = round(post.published_at.timestamp(), 2)
+        self.assertEqual(stored, published_at)

@@ -80,3 +80,19 @@ class QueryManager(metaclass=ABCMeta):
 
         """
         pass
+
+    def get_parameters_for_filter(self, filter):
+        """Get the parameters for the specified filters.
+
+        The filter's parameter should be converted before being
+        tested in the table.
+
+        """
+        plural_name = get_plural_name(filter.query.first_model)
+        field = filter.field
+        converted = []
+        for parameter in filter.parameters:
+            converted.append(self.driver.value_to_storage(
+                    plural_name, field, parameter))
+
+        return tuple(converted)

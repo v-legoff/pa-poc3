@@ -64,11 +64,17 @@ class YAMLQueryManager(QueryManager):
         """Simply return the not equal comparison."""
         return field != value
 
+    @staticmethod
+    def lowerthan(field, value):
+        """Simply return the lower than comparison."""
+        return field < value
+
     def find_operator(self, operator):
         """Return a function used to compare datas."""
         operators = {
             "=": self.equal,
             "!=": self.notequal,
+            "<": self.lowerthan,
         }
 
         return operators[operator]
@@ -84,7 +90,7 @@ class YAMLQueryManager(QueryManager):
         for filter in query.filters:
             function = self.find_operator(filter.operator.name)
             field = filter.field
-            parameters = filter.parameters
+            parameters = self.get_parameters_for_filter(filter)
             objects = [model_object for model_object in objects if \
                     function(getattr(model_object, field), *parameters)]
 

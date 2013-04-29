@@ -26,14 +26,21 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the model contraints."""
+"""Module containing the Event base class."""
 
-from model.constraints.datetime_pa import DateTimeConstraint
-from model.constraints.integer import IntegerConstraint
-from model.constraints.string_pa import StringConstraint
+class Event:
 
-CONSTRAINTS = {
-    "datetime": DateTimeConstraint,
-    "integer": IntegerConstraint,
-    "string": StringConstraint,
-}
+    """This base class represent a model event.
+
+    A model event could be called in different generic situations,
+    for instance when the model object is loaded from a data connector,
+    or created, or updated.  For each of this event, a class inherited
+    from Event should be created defining the behaviour of this event
+    and its expected arguments.
+
+    This base class doesn't define the main methods: '__init__' and
+    '__call__'.  Both of them must be created in the subclasses.
+
+    """
+
+    pass

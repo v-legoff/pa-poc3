@@ -26,14 +26,28 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the model contraints."""
+"""Module defining the datetime converter for sqlite3."""
 
-from model.constraints.datetime_pa import DateTimeConstraint
-from model.constraints.integer import IntegerConstraint
-from model.constraints.string_pa import StringConstraint
+from datetime import datetime
 
-CONSTRAINTS = {
-    "datetime": DateTimeConstraint,
-    "integer": IntegerConstraint,
-    "string": StringConstraint,
-}
+from dc.converters.base import Converter
+
+class DateTimeConverter(Converter):
+
+    """Converter used to store a datetime in a sqlite3 database.
+
+    Instead of storing the datetime as is, we store the
+    timestamp.  This allows fast comparison between
+    datetimes (in and out of the database).
+
+    """
+
+    @staticmethod
+    def to_object(value):
+        """Return the datetime built from the timestamp."""
+        return datetime.fromtimestamp(value)
+
+    @staticmethod
+    def to_storage(value):
+        """Return a float object."""
+        return value.timestamp()

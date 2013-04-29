@@ -38,6 +38,7 @@ except ImportError:
     driver = False
 
 from dc.generic.sql.driver import SQLDriver
+from dc.sqlite3.converters.datetime_cvt import DateTimeConverter
 from dc import exceptions
 
 class Sqlite3Driver(SQLDriver):
@@ -52,8 +53,13 @@ class Sqlite3Driver(SQLDriver):
     """
 
     SQL_TYPES = {
+        "datetime": "real",
         "integer": "integer",
         "string": "text",
+    }
+
+    converters = {
+        "datetime": DateTimeConverter,
     }
 
     def __init__(self):

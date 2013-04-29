@@ -170,7 +170,7 @@ class MongoDriver(Driver):
         self.increments[table].insert({
                 "name": field,
                 "current": value + 1,
-        })
+        }, w=True)
 
         return value
 
@@ -184,7 +184,7 @@ class MongoDriver(Driver):
             ret[field] = self.get_and_update_increment(table_name, field)
 
         line.update(ret)
-        m_id = self.datas[table_name].insert(line)
+        m_id = self.datas[table_name].insert(line, w=True)
         identifiers = dict((field_name, line[field_name]) for \
                 field_name, constraint in table.fields.items() if \
                 constraint.has("pkey"))

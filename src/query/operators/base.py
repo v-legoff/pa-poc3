@@ -31,7 +31,7 @@ import re
 """Module containing the base class Operator, defined below."""
 
 # Constants
-FIELD = r"[A-Za-z][A-Za-z0-9]*"
+FIELD = r"[A-Za-z_][A-Za-z0-9_]*"
 
 class Operator:
 
@@ -68,7 +68,6 @@ class Operator:
         parameters = cls.nb_parameters * [parameter]
         expression = cls.expression.format(*parameters, operator=operator,
                 field=field)
-        print("Expression for", cls.name, "is", repr(expression))
         return re.compile(expression)
 
     def __init__(self, field, *parameters):

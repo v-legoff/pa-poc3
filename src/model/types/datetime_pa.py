@@ -26,14 +26,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the model contraints."""
+"""This module contains the DateTime field type."""
 
-from model.constraints.datetime_pa import DateTimeConstraint
-from model.constraints.integer import IntegerConstraint
-from model.constraints.string_pa import StringConstraint
+from model.types.base import BaseType
 
-CONSTRAINTS = {
-    "datetime": DateTimeConstraint,
-    "integer": IntegerConstraint,
-    "string": StringConstraint,
-}
+class DateTime(BaseType):
+
+    """Field type: datetime.
+
+    This type of field handles a date and time (as defined
+    by the 'datetime' module).
+
+    """
+
+    type_name = "datetime"
+    def __init__(self, default=None, **kwargs):
+        BaseType.__init__(self, default, **kwargs)

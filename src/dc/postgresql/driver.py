@@ -52,6 +52,7 @@ class PostgreSQLDriver(SQLDriver):
     """
 
     SQL_TYPES = {
+        "datetime": "timestamp",
         "integer": "numeric",
         "string": "text",
     }

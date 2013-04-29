@@ -2,4 +2,4 @@
 dc_name: mongo
 
 # Database location, a directory
-#location: ~/aboard/sqlite.db
+#location: ~/aboard/yaml

@@ -82,13 +82,12 @@ class Driver(metaclass=ABCMeta):
 
         return values
 
-    @classmethod
     def value_to_storage(self, name, field_name, value):
         """Return a converted attribute."""
         table = self.tables[name]
-        type_field = table.fields[field_name].type_name
-        if cls.converters.get(type_field):
-            converter = cls.converters[type_field]
+        type_field = table.fields[field_name].name_type
+        if type(self).converters.get(type_field):
+            converter = type(self).converters[type_field]
             value = converter.to_storage(value)
 
         return value

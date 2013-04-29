@@ -38,7 +38,4 @@ class PostgreSQLQueryManager(SQLQueryManager):
 
     """
 
-
-    def op_equal(self, filter, formats):
-        """Return the statement corresponding to the equal (=) operator."""
-        return filter.field + "=" + formats[0]
+    pass

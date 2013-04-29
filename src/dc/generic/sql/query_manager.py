@@ -70,9 +70,8 @@ class SQLQueryManager(QueryManager):
                 statement += " " + connector.upper() + " "
 
             statement += self.get_statement_from_filter(filter, formats)
-            values.extend(filter.parameters)
+            values.extend(self.get_parameters_for_filter(filter))
 
-        print("Statement", statement, values)
         lines = self.driver.execute_query(statement, *values)
         dict_lines = []
         for line in lines:
@@ -90,6 +89,7 @@ class SQLQueryManager(QueryManager):
         methods = {
                 "=": self.op_equal,
                 "!=": self.op_notequal,
+                "<": self.op_lowerthan,
         }
 
         return methods[operator](filter, formats)
@@ -101,3 +101,7 @@ class SQLQueryManager(QueryManager):
     def op_notequal(self, filter, formats):
         """Return the statement corresponding to the notequal (!=) operator."""
         return filter.field + "!=" + formats[0]
+
+    def op_lowerthan(self, filter, formats):
+        """Return the statement corresponding to the lowerthan (<) operator."""
+        return filter.field + "<" + formats[0]

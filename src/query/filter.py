@@ -49,6 +49,7 @@ class Filter:
     """
 
     def __init__(self, expression, *parameters):
+        self.query = None
         for regular_expression, cls_operator in OPERATORS.items():
             match = regular_expression.search(expression)
             if match:

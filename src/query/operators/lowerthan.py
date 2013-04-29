@@ -26,14 +26,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This package contains the model contraints."""
+"""Module containing the LowerThanOperator class, defined below."""
 
-from model.constraints.datetime_pa import DateTimeConstraint
-from model.constraints.integer import IntegerConstraint
-from model.constraints.string_pa import StringConstraint
+from query.operators.base import Operator
 
-CONSTRAINTS = {
-    "datetime": DateTimeConstraint,
-    "integer": IntegerConstraint,
-    "string": StringConstraint,
-}
+class LowerThanOperator(Operator):
+
+    """Generic query operator to represent a lower than comparison.
+
+    In Python language, this operator would be a '<' sign.
+
+    """
+
+    name = "<"
+    expression = "{field}{operator}{}"
