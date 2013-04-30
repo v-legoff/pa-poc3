@@ -278,6 +278,6 @@ class AbstractDCTest:
         self.teardown_data_connector()
         self.setup_data_connector()
         post = repository.find(post.id)
-        stored = round(published_at.timestamp(), 2)
-        published_at = round(post.published_at.timestamp(), 2)
+        stored = int(published_at.timestamp())
+        published_at = int(post.published_at.timestamp())
         self.assertEqual(stored, published_at)

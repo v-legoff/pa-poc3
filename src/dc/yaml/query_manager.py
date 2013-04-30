@@ -69,12 +69,18 @@ class YAMLQueryManager(QueryManager):
         """Simply return the lower than comparison."""
         return field < value
 
+    @staticmethod
+    def lowerequal(field, value):
+        """Simply return the lower equal comparison."""
+        return field <= value
+
     def find_operator(self, operator):
         """Return a function used to compare datas."""
         operators = {
             "=": self.equal,
             "!=": self.notequal,
             "<": self.lowerthan,
+            "<=": self.lowerequal,
         }
 
         return operators[operator]

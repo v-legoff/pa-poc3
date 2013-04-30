@@ -79,6 +79,7 @@ class MongoQueryManager(QueryManager):
         converted_ops = {
             "!=": self.notequal,
             "<": self.lowerthan,
+            "<=": self.lowerequal,
         }
         if operator == "=":
             return {filter.field: filter.parameters[0]}
@@ -92,5 +93,9 @@ class MongoQueryManager(QueryManager):
         return {"$ne": parameters[0]}
 
     def lowerthan(self, filter, *parameters):
-        """Return the corresponding dictionary for the != operator."""
+        """Return the corresponding dictionary for the < operator."""
         return {"$lt": parameters[0]}
+
+    def lowerequal(self, filter, *parameters):
+        """Return the corresponding dictionary for the <= operator."""
+        return {"$lte": parameters[0]}

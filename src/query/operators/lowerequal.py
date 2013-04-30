@@ -26,25 +26,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package containing the generic query operators.
+"""Module containing the LowerEqualOperator class, defined below."""
 
-Each operator should be a class inherited from query.operator.base.Operator.
+from query.operators.base import Operator
 
-"""
+class LowerEqualOperator(Operator):
 
-from query.operators.equal import EqualOperator
-from query.operators.lowerequal import LowerEqualOperator
-from query.operators.lowerthan import LowerThanOperator
-from query.operators.notequal import NotEqualOperator
+    """Generic query operator to represent a lower or equal than comparison.
 
-OPERATORS = {}
+    In Python language, this operator would be a '<=' sign.
 
-CLASS_OPERATORS = [
-     EqualOperator,
-     LowerEqualOperator,
-     LowerThanOperator,
-     NotEqualOperator,
-]
+    """
 
-for operator in CLASS_OPERATORS:
-    OPERATORS[operator.compile_regular_expression()] = operator
+    name = "<="
+    expression = "{field}{operator}{}"
