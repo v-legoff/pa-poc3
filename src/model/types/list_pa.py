@@ -1,9 +1,9 @@
 # Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,24 +31,24 @@
 import importlib
 
 from model.types.base import BaseType
-from model.represent import DCList
+#from model.representation import DCList
 
 class List(BaseType):
-    
+
     """Class representing a list field type.
-    
+
     To create a list, you must specify (as a string) the field types that
     it should contain.  For instance, if a list must contain integers,
     write a model with this field definition:
         elements = List("Integer")
-    
+
     Note that what you get when you further access the list is not a
     list type, but a representation.  You can manipulate it as a list,
     though, append or insert or delete elements from it even using
     slices.
-    
+
     """
-    
+
     type_name = "list"
     def __init__(self, contain_type, register=True):
         BaseType.__init__(self, pkey=False, default=[])
@@ -57,7 +57,7 @@ class List(BaseType):
         if register and not contain_type:
             raise ValueError("a registered list MUST have a contain_type " \
                     "specified")
-        
+
         if contain_type:
             # We try to find the type in types
             types = importlib.import_module("model.types")
@@ -66,36 +66,36 @@ class List(BaseType):
             except AttributeError:
                 raise ValueError("the {} field type cannot be " \
                         "found".format(repr(contain_type))) from None
-            
+
             if field_type not in [types.Integer, types.String]:
                 raise ValueError("the {} field type can't be stored " \
                         "in a list".format(repr(contain_type)))
-            
+
             self.contain_type = field_type
-    
+
     def __get__(self, obj, typeobj):
         """Return the list representation."""
         if obj is None:
             return self
-        
+
         elements = self.get_cache(obj)
         return elements
-    
+
     def __set__(self, obj, new_obj):
         """Try to set the related value.
-        
+
         We DO NOT change the relation, but instead modify its content.
-        
+
         """
         elements = self.get_cache(obj)
         elements[:] = new_obj
-    
+
     def get_cache(self, obj):
         """Return the cached list or create the DCList if needed."""
         field = self.field_name
         if field in obj._cache:
             return obj._cache[field]
-        
+
         elements = DCList(self, obj, [])
         obj._cache[field] = elements
         return elements

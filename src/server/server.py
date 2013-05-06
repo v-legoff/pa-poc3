@@ -192,6 +192,9 @@ class Server:
         for bundle in self.bundles.values():
             bundle.setup(self, self.loader)
 
+        for model in self.models:
+            type(model).extend(model)
+
     def run(self):
         """Run the server."""
         cherrypy.engine.autoreload.unsubscribe()

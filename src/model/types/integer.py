@@ -40,5 +40,6 @@ class Integer(BaseType):
     """
 
     type_name = "integer"
+    can_relate = True
     def __init__(self, default=None, **kwargs):
         BaseType.__init__(self, default, **kwargs)

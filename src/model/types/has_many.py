@@ -1,9 +1,9 @@
 # Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -28,121 +28,70 @@
 
 """This module contains the HasMany relation field type."""
 
-from model.represent import DCMirror
-from model.types.base import BaseType
-from model.types.list_pa import List
+from model.representations.dc_mirror import DCMirror
+from model.types.list4many import List4Many
+from model.types.related import Related
 
-def get_pkey(mod_object):
-    """Return the pkey value (not values)."""
-    fields = [getattr(type(mod_object), name) for name in dir(type(
-            mod_object))]
-    fields = [field for field in fields if isinstance(field, BaseType)]
-    field = [field.field_name for field in fields if field.pkey][0]
-    return getattr(mod_object, field)
+class HasMany(Related):
 
-class HasMany(BaseType):
-    
     """Class representing a has_many relation.
-    
+
     Here is a snippet of code using relations:
         class User(Model):
             username = String()
             groups = HasMany("user.Group")
-    
-    When a relation HasMany is created, it creates in the model's table
-    a transparent new attribute containing a list of referrence to
-    the specified objects.  This relation is not visible (and should not be
-    used directly) by the user.  The original attribute is a descriptor
-    which will fetch the required objects, using the data connector.  Here's
-    a snipset using the User model defined above:
-    >>> me = User.find(id=1)  # it exists
-    >>> print(me.group_ids)
-    []
-    >>> me.group_ids = [1]  # Add a group (one way)
-    >>> me.group_ids
-    [1]
-    >>> me.groups
-    [<user.Group model object>]
-    >>> me.groups.append(Group.find(id=2)  # It exists too
-    >>> me.group_ids
-    [1, 2]
-    >>> del me.groups[0]
-    [2]
-    
+
+    When a relation HasMany is created, it creates in the foreign model's table
+    a transparent new attribute containing a referrence to the current
+    model.  The mechanism is described in the model.relations.one2many
+    module.
+
     """
-    
+
     type_name = "has_many"
-    def __init__(self, related_to, attribute_name=None):
-        elts = []
-        BaseType.__init__(self, pkey=False, default=elts)
-        self.register = False
-        self.related_to = related_to
-        self._attribute_name = attribute_name
-    
-    @property
-    def attribute_name(self):
-        """Return the attribute name if set, otherwise a default one."""
-        if self._attribute_name:
-            return self._attribute_name
-        
-        attribute = self.field_name
-        if attribute.endswith("ies"):
-            attribute = attribute[:-3] + "y_ids"
-        elif attribute.endswith("es"):
-            attribute = attribute[:-2] + "_ids"
-        elif attribute.endswith("s"):
-            attribute = attribute[:-1] + "_ids"
-        else:
-            attribute += "_ids"
-        
-        return attribute
-    
-    def get_related(self, obj):
-        """Return the link to the related_to field."""
-        attribute_name = self.attribute_name
-        return getattr(obj, attribute_name)
-    
+    nb_foreign_models = -1 # Infinite
+    def __init__(self, foreign_model):
+        Related.__init__(self)
+        self.set_default = False
+        self.foreign_model = foreign_model
+        self.relation = None
+
     def extend(self):
         """Extend the model."""
-        attribute_name = self.attribute_name
-        related = List("Integer")
-        related.field_name = attribute_name
-        related.model = self.model
-        setattr(self.model, attribute_name, related)
-    
+        # First we create the relation if necessary
+        if self.relation is None:
+            relation = self.find_relation()
+            self.relation = relation
+            if self.relation.inverse_relation:
+                relation.inverse.relation = relation.inverse_relation
+
+            print("Create relation", self.relation)
+        self.relation.extend()
+
     def __get__(self, obj, typeobj):
         """Try to access the related value."""
         if obj is None:
             return self
-        
+
         elements = self.get_cache(obj)
         return elements
-    
+
     def __set__(self, obj, new_obj):
         """Try to set the related value.
-        
+
         Simply update the lists.
-        
+
         """
         elements = self.get_cache(obj)
         elements[:] = new_obj
-    
+
     def get_cache(self, obj):
-        """Return the cached list or create the DCList if needed."""
+        """Return the cached list or create the List4Many if needed."""
         field = self.field_name
         if field in obj._cache:
             return obj._cache[field]
-        
-        related = self.get_related(obj)
-        elements = DCMirror(related)
-        elements.to_neighbor = get_pkey
-        elements.to_mirror = self.get_object
+
+        mirror = DCMirror(self)
+        elements = List4Many(mirror, obj)
         obj._cache[field] = elements
         return elements
-    
-    def get_object(self, key):
-        """From a primary key, return the related object."""
-        data_connector = self.model.data_connector
-        model = data_connector.models[self.related_to]
-        mod_object = model.find(key)
-        return mod_object

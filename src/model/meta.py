@@ -68,8 +68,13 @@ class MetaModel(type):
             field = clean_fields[i]
             field.nid = nid
             field.model = cls
-            field.extend()
 
     def __repr__(self):
         """Return the model's name."""
-        return get_name(self, bundle=False)
+        return get_name(self, bundle=True)
+
+    def extend(cls):
+        """Extend all the fields."""
+        fields = get_fields(cls)
+        for field in fields:
+            field.extend()

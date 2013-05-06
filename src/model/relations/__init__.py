@@ -1,4 +1,4 @@
-# Copyright (c) 2012 LE GOFF Vincent
+# Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,19 +26,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""This module contains the String field type."""
+"""This package contains the different relations (each in a separate module).
 
-from model.types.base import BaseType
+Relations:
+    one-to-one (one2one module)
+    one-to-many (one2many module)
+    many-to-many (many2many module)
 
-class String(BaseType):
-
-    """Field type: string.
-
-    This type of field handles a string of characters of different length.
-
-    """
-
-    type_name = "string"
-    can_relate = True
-    def __init__(self, default=None, **kwargs):
-        BaseType.__init__(self, default, **kwargs)
+"""

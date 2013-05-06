@@ -69,6 +69,10 @@ class Repository:
         model = get_name(self.model, bundle=True)
         return "<Repository of the {} model class>".format(repr(model))
 
+    def get_model(self, name):
+        """Return if found the model."""
+        return self.data_connector.repository_manager.models[name]
+
     def get_all(self):
         """Return all model objects."""
         with self.data_connector.u_lock:

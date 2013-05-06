@@ -52,6 +52,7 @@ class BaseType:
         return nid
 
     type_name = "undefined"
+    can_relate = False
     def __init__(self, default=None, **kwargs):
         """The basetype field constructor."""
         self.nid = self.next_nid()
