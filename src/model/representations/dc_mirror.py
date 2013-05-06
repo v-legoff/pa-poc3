@@ -89,7 +89,7 @@ class DCMirror(collections.MutableSequence):
     def check(self, values):
         """Check that the value(s) are of the right type."""
         from model.functions import get_pkey_values
-        model = self.field.model
+        model = self.field.foreign_model
         if isinstance(values, list):
             if not all(isinstance(value, model) for value in values):
                 raise ValueError("this mirror list doesn't accept this " \

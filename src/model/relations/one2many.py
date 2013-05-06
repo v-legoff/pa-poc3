@@ -54,10 +54,11 @@ class One2ManyRelation(Relation):
             Add the new owner to the many side.
 
         """
-        if model_object in self.inverse.get_cache(model_object).mirror:
-            self.inverse.get_cache(model_object).mirror.remove(self.owner)
+        print("Change owner, model_object = ", model_object, " and owner =", new_owner)
+        if model_object in self.inverse.get_cache(new_owner).mirror:
+            self.inverse.get_cache(new_owner).mirror.remove(model_object)
 
-        self.inverse.get_cache(model_object).mirror.append(new_owner)
+        self.inverse.get_cache(new_owner).mirror.append(model_object)
 
     def change_inverse(self, model_object, indices_or_slice, new_values):
         """Change the inverse's side.
