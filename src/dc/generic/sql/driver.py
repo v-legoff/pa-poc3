@@ -177,6 +177,29 @@ class SQLDriver(Driver):
 
         return line
 
+    def find_matching_lines(self, table_name, matches):
+        """Return the matching list of lines.
+
+        This method is used to fetch lines that have relations
+        between them.  The matches are a dictionary containing the
+        line's attributes that should match.
+
+        """
+        table = self.tables[table_name]
+        query = "SELECT * FROM " + table_name
+        query += " WHERE " + " AND ".join(match + "=?" for \
+                match in matches)
+        rows = self.execute_query(query, *matching.values())
+        lines = []
+        for row in rows:
+            line = {}
+            for i, field_name in enumerate(table.fields.keys()):
+                line[field_name] = row[i]
+
+            lines.append(line)
+
+        return lines
+
     def add_line(self, table_name, line):
         """Add a new line."""
         table = self.tables[table_name]

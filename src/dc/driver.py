@@ -187,11 +187,27 @@ class Driver(metaclass=ABCMeta):
         return []
 
     @abstractmethod
-    def query_for_line(self, table_name, identifeirs):
+    def query_for_line(self, table_name, identifiers):
         """Query for the specified line.
 
         This method should select and return the selected line, if found,
         or None if not.
+
+        """
+        pass
+
+    @abstractmethod
+    def find_matching_lines(self, table_name, matches):
+        """Return the matching list of lines.
+
+        This method is used to fetch lines that have relations
+        between them.  The matches are a dictionary containing the
+        line's attributes that should match.  One call could be:
+            driver.find_matching_lines("books", {"category_id": 5})
+
+        The result should be a list (empty list if no result)
+        containing dictionaries that will be converted into objects
+        by the repository manager.
 
         """
         pass

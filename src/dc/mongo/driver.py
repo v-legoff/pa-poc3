@@ -154,6 +154,31 @@ class MongoDriver(Driver):
 
         return None
 
+    def find_matching_lines(self, table_name, matches):
+        """Return the matching list of lines.
+
+        This method is used to fetch lines that have relations
+        between them.  The matches are a dictionary containing the
+        line's attributes that should match.
+
+        """
+        table = self.tables[table_name]
+        datas = self.datas[table_name].find(matches)
+        lines = []
+        for data in datas:
+            identifiers = {}
+            for name, constraint in table.fields.items():
+                if constraint.has("pkey"):
+                    identifiers[name] = data[name]
+
+            m_id = data["_id"]
+            del data["_id"]
+            self.line_ids[table_name][tuple(identifiers.items())] = m_id
+            self.id_lines[m_id] = data
+            lines.append(data)
+
+        return lines
+
     def get_and_update_increment(self, table, field):
         """Get and update an auto-increment field.
 

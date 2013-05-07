@@ -41,65 +41,26 @@ class One2ManyRelation(Relation):
     """
 
     name = "one2many"
-    def change_owner(self, model_object, new_owner):
-        """Change the owner of the relation.
+    def affect(self, model_object, old_value, new_value):
+        """Change the value on the inverse's side.
 
-        The owner is ALWAYS a single object, as this is a one2many relation.
-        The 'one' part indicates that the owner's side is always a single
-        model object.
-
-        Therefore, this method:
-            Delete the previous owner if needed
-            Change the owner's side
-            Add the new owner to the many side.
+        The owning's side has been changed.  This method is used to
+        apply this change to the inverse's side.  This is a One2Many
+        relation, therefore the owning's side is a single object.
+        The inverse's side is a list (the many's part) so we delete
+        the old owner, if it exists, and add the new one.
 
         """
-        print("Change owner, model_object = ", model_object, " and owner =", new_owner)
-        if model_object in self.inverse.get_cache(new_owner).mirror:
-            self.inverse.get_cache(new_owner).mirror.remove(model_object)
+        old_mirror = old_value is not None and self.inverse.get_cache(
+                old_value).mirror or None
+        new_mirror = self.inverse.get_cache(new_value).mirror if \
+                new_value else None
+        if old_mirror and model_object in old_mirror:
+            old_mirror.remove(model_object)
 
-        self.inverse.get_cache(new_owner).mirror.append(model_object)
-
-    def change_inverse(self, model_object, indices_or_slice, new_values):
-        """Change the inverse's side.
-
-        We need:
-            The indices or slice that changed
-            The new value(s).
-
-        If the values only contain None object, then it's a deletion.  If
-        it's an addition, then the indices are just outside of the field's
-        indices.  If it's a mere modification, the indices are present
-        in the field.
-
-        """
-        indicesor_slice, new_values = self.convert_to_list(indice_or_slices,
-                new_values)
-        if all(value is None for value in new_values):
-            # Deletion
-            for model_object in self.inverse.get_cache(model_object).mirror[ \
-                    indices_or_slice]:
-                self.set_value(model_object, self.owner.field_name, None)
-
-            del self.inverse.get_cache(model_object).mirror[indices_or_slice]
-        else:
-            try:
-                old_values = self.inverse.get_cache(model_object).mirror[ \
-                        indices_or_slice]
-                assert old_values
-            except (IndexError, AssertionError):
-                # The new values are being added
-                for value in new_values:
-                    self.inverse.get_cache(model_object).mirror.append(value)
-                    self.set_value(value, self.owner.field_name, self.inverse)
-            else:
-                # Mere modification
-                for value in old_values:
-                    self.set_value(value, self.owner.field_name, None)
-                for value in new_values:
-                    self.set_value(value, self.owner.field_name, self.inverse)
-                self.inverse.get_cache(model_object).mirror[ \
-                        indices_or_slice] = new_values
+        print("Add", self.inverse, self.inverse.get_cache(new_value).mirror, new_mirror)
+        if new_mirror is not None:
+            new_mirror.append(model_object)
 
     def extend(self):
         """Extend if necessary one of the model."""

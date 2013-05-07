@@ -179,6 +179,15 @@ class YAMLDriver(Driver):
         """
         return None
 
+    def find_matching_lines(self, table_name, matches):
+        """ Look for the specified object.
+
+        The YAML repository manager only works with the
+        cache.  Therefore this method is not used.
+
+        """
+        pass
+
     def add_line(self, table_name, line):
         """Add a new line."""
         table = self.tables[table_name]

@@ -131,6 +131,29 @@ class RepositoryManager(metaclass=ABCMeta):
 
         return self.storage_to_object(name, line)
 
+    def find_matching_objects(self, field, value):
+        """Return the matching models.
+
+        This method is used to retrieve the matching models of a
+        related field.
+
+        """
+        model = field.model
+        name = get_name(model)
+        plural_name = get_plural_name(model)
+        field_name = field.field_name
+        matches = {
+            field_name: self.driver.value_to_storage(
+                    plural_name, field_name, value),
+        }
+        lines = self.driver.find_matching_lines(plural_name, matches)
+        objects = []
+        for line in lines:
+            model_object = self.get_or_build_model(name, line)
+            objects.append(model_object)
+
+        return objects
+
     @abstractmethod
     def add_object(self, model_object):
         """Save the object, issued from a model.
@@ -268,7 +291,6 @@ class RepositoryManager(metaclass=ABCMeta):
                 continue
 
             values[field.field_name] = value
-
         return self.driver.line_to_storage(plural_name, values)
 
     def storage_to_object(self, name, line):

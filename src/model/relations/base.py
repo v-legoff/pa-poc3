@@ -32,12 +32,17 @@ class Relation:
 
     """Abstract tlcass defining a standard relation.
 
-    Whatever the relation, it implies two models:  the first one is on the owning side of the relation, the second one is on the inverse side.  This notion is abstracted by the relation abstract class (and its subclasses) and SHOULD NOT be used directly by the user.  Instead, she will use the field types:
+    Whatever the relation, it implies two models:  the first one is
+    on the owning side of the relation, the second one is on the inverse
+    side.  This notion is abstracted by the relation abstract class
+    (and its subclasses) and SHOULD NOT be used directly by the user.
+    Instead, she will use the field types:
         HasOne -- the model is related to ANOTHER ONE
         HasMany -- the model is connected with MANY other model objects
         BelongTo -- like has one but without relation usable on this side
 
-    These two fields are used to create in the background a relation.  For instance:
+    These two fields are used to create in the background a relation.
+    For instance:
         class Post(Model):
             title = String()
             published_at = DateTime()
@@ -64,6 +69,12 @@ class Relation:
     """
 
     name = "unknown relation"
+
+    # Constants
+    TYPE_DELETE = 0
+    TYPE_MODIFICATION = 1
+    TYPE_ADD = 2
+
     def __init__(self, owner, inverse):
         self.owner = owner
         self.inverse = inverse
@@ -83,48 +94,6 @@ class Relation:
             return "<unidirectional {} between {}.{} and {}.{}>".format(
                     rel_type, owner, field, inverse, inverse_field)
 
-    def change_owner(self, change):
-        """Change the owner's side.
-
-        The parameter 'change' could be:
-            The new owner
-            The indices (or slices) of the change.
-
-        The type of change implies addition, deletion or mere modification.
-
-        """
-        pass
-
-    def change_inverse(self, change):
-        """Change the inverse's side.
-
-        The parameter 'change' could be:
-            The new inverse model object
-            The indices (or slices) of the change.
-
-        The type of change implies addition, deletion or mere modification.
-
-        """
-        pass
-
-    def get_value(self, field):
-        """Get the field without triggerring the descriptor."""
-        descriptor = getattr(type(field.model), field.field_name)
-        return descriptor.__get__(None)
-
-    def set_value(self, model_object, attribute, value):
-        """Set the value without triggerring the descriptor.
-
-        When the descriptor is called, the bidirectional relation is
-        studied for modifications, which is bad, because this method could
-        be called by the other side of the bidirectional relation.  In
-        short, if you do something like object.field = new_value, this
-        could never end (if field is a bidirectional relation).
-
-        """
-        descriptor = getattr(type(model_object), attribute)
-        descriptor.__set__(model_object, value)
-
     def convert_to_list(self, indices_or_slice, values):
         """Convert the value into a list of values.
 
@@ -142,4 +111,23 @@ class Relation:
 
     def extend(self):
         """Extend one of the model if necessary."""
+        pass
+
+    def affect(self):
+        """This method is used to apply the changes to the inverse.
+
+        This method could take different parameters depending on
+        the relation type.  Either:
+            model_object -- the changed model object
+            old_value -- the old value assigned to the owner's field
+            new_value -- te new value assigned to the owner's field
+        Or:
+            model_object -- the modified owner
+            indices_or_slice -- the indices or slice of the modification
+            old_values -- the old values (if modified or deleted)
+            mod_type -- the type of moficiation (DELETE, MODIFICATION, ADD)
+
+        This method should be called AFTER the owner's modification.
+
+        """
         pass

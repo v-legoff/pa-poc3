@@ -36,8 +36,7 @@ class DCMirror(collections.MutableSequence):
 
     A mirrored list is basically a list of model objects.  You can manipulate it
     as a a standard list though (adding new model objects, remove them or
-    updating them).  The only thing it will do will be to transform the
-    model objects into something it could store (like an ID).
+    updating them).
 
     """
 
@@ -49,8 +48,7 @@ class DCMirror(collections.MutableSequence):
         return len(self.elements)
 
     def __getitem__(self, i):
-        values = self.get_models()
-        return values[i]
+        return self.elements[i]
 
     def __delitem__(self, i):
         del self.elements[i]
@@ -64,53 +62,28 @@ class DCMirror(collections.MutableSequence):
         self.elements.insert(i, value)
 
     def __repr__(self):
-        values = self.get_models()
-        return repr(values)
+        return repr(self.elements)
 
     def __str__(self):
-        values = self.get_models()
-        return str(values)
+        return str(self.elements)
 
     @property
     def repository(self):
         """Return the model's repository."""
         return self.field.model._repository
 
-    def get_models(self):
-        """Return the corresponding models."""
-        models = []
-        repository = self.repository
-        for element in self.elements:
-            model_object = repository.find(element)
-            models.append(model_object)
-
-        return models
-
     def check(self, values):
         """Check that the value(s) are of the right type."""
-        from model.functions import get_pkey_values
         model = self.field.foreign_model
         if isinstance(values, list):
             if not all(isinstance(value, model) for value in values):
                 raise ValueError("this mirror list doesn't accept this " \
                         "type of datas")
 
-            results = []
-            for value in values:
-                pkey_values = get_pkey_values(value)
-                if len(pkey_values) == 1:
-                    pkey_values = pkey_values[0]
-
-                results.append(pkey_values)
-
-            return results
+            return values
 
         if not isinstance(values, model):
             raise ValueError("this mirror list doesn't accept this type " \
                     "of data")
 
-        pkey_values = get_pkey_values(values)
-        if len(pkey_values) == 1:
-            pkey_values = pkey_values[0]
-
-        return pkey_values
+        return values

@@ -70,6 +70,20 @@ class YAMLRepositoryManager(RepositoryManager):
         name = get_name(model)
         return list(self.objects_tree.get(name, {}).values())
 
+    def find_matching_objects(self, field, value):
+        """Return the matching models.
+
+        This method is used to retrieve the matching models of a
+        related field.
+
+        """
+        model = field.model
+        name = get_name(model)
+        field_name = field.field_name
+        objects = [model_object for model_object in self.objects_tree[ \
+                name].values() if getattr(model_object, field_name) == value]
+        return objects
+
     def add_object(self, model_object):
         """Save the object, issued from a model."""
         RepositoryManager.add_object(self, model_object)

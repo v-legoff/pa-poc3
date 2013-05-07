@@ -28,6 +28,7 @@
 
 """This module contains the HasOne relation field type."""
 
+from model.types.base import BaseType
 from model.types.related import Related
 
 class HasOne(Related):
@@ -81,6 +82,11 @@ class HasOne(Related):
         attribute_name = self.field_name + "_id"
         return attribute_name
 
+    @property
+    def related_field(self):
+        """Return the related field."""
+        return getattr(self.model, self.attribute_name)
+
     def get_related(self, obj):
         """Return the link to the related_to field."""
         attribute_name = self.attribute_name
@@ -104,7 +110,7 @@ class HasOne(Related):
 
         key = self.get_related(obj)
         repository = self.foreign_model._repository
-        if key is None:
+        if key is None or isinstance(key, BaseType):
             return None
 
         return repository.find(key)
@@ -118,6 +124,7 @@ class HasOne(Related):
         """
         from model.functions import get_pkey_values
         attribute_name = self.attribute_name
+        old_value = getattr(obj, self.field_name)
         model = self.foreign_model
         if new_obj is None:
             new_value = None
@@ -126,9 +133,6 @@ class HasOne(Related):
                 raise ValueError("try to affect {} to the {}.{} model " \
                         "field".format(new_obj, self.model, self.field_name))
 
-        if obj is not None:
-            self.relation.change_owner(obj, new_obj)
-        if new_obj is not None:
             values = get_pkey_values(new_obj)
             if len(values) == 1:
                 values = values[0]
@@ -136,3 +140,4 @@ class HasOne(Related):
             new_value = values
 
         setattr(obj, attribute_name, new_value)
+        self.relation.affect(obj, old_value, new_obj)

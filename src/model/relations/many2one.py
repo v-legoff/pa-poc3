@@ -103,3 +103,20 @@ class Many2OneRelation(Relation):
         self.set_value(model_object, self.inverse.field_name,
                 new_inverse)
         self.owner.get_cache(model_object).mirror.append(new_inverse)
+
+    def retrieve_objects(self, model_object):
+        """Retrieve the objects of the many part.
+
+        A Mayn2One relation uses the repository manager to retrieve
+        a list of objects.
+
+        """
+        from model.functions import get_pkey_values
+        value = get_pkey_values(model_object)
+        if len(value) == 1:
+            value = value[0]
+
+        field = self.inverse.related_field
+        repository = self.inverse.model._repository
+        repository_manager = repository.data_connector.repository_manager
+        return repository_manager.find_matching_objects(field, value)

@@ -73,8 +73,9 @@ class HasMany(Related):
         if obj is None:
             return self
 
-        elements = self.get_cache(obj)
-        return elements
+        list4many = self.get_cache(obj)
+        list4many.mirror.elements[:] = self.relation.retrieve_objects(obj)
+        return list4many
 
     def __set__(self, obj, new_obj):
         """Try to set the related value.
