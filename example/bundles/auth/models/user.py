@@ -11,7 +11,7 @@ class User(Model):
     username = String()
     password = String() #  the hashed password
     salt = String()
-    creation = DateTime()
+    group = HasOne("auth.Group")
 
     def __repr__(self):
         return "<user id={}, name={}>".format(self.id, repr(self.username))
