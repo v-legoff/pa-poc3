@@ -62,11 +62,11 @@ class HasMany(Related):
         if self.relation is None:
             relation = self.find_relation()
             self.relation = relation
-            if self.relation.inverse_relation:
+            if self.relation and self.relation.inverse_relation:
                 relation.inverse.relation = relation.inverse_relation
 
-            print("Create relation", self.relation)
-        self.relation.extend()
+        if self.relation:
+            self.relation.extend()
 
     def __get__(self, obj, typeobj):
         """Try to access the related value."""

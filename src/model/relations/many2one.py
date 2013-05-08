@@ -89,3 +89,25 @@ class Many2OneRelation(Relation):
         repository = self.inverse.model._repository
         repository_manager = repository.data_connector.repository_manager
         return repository_manager.find_matching_objects(field, value)
+
+    def extend(self):
+        """Extend if necessary one of the model."""
+        from model.functions import get_pkey_names
+        attribute_name = self.inverse.attribute_name
+        pkey_names = get_pkey_names(self.owner.model)
+        if len(pkey_names) > 1:
+            raise ValueError("more than one foreign key for this relation " \
+                    "is not valid")
+
+        pkey = pkey_names[0]
+        field_type = type(getattr(self.owner.model, pkey))
+        if not field_type.can_relate:
+            raise ValueError("the type of field {} can't be used in " \
+                    "a relation".format(field_type))
+
+        related = field_type(default=lambda o: None)
+        related.field_name = attribute_name
+        related.model = self.inverse.model
+        if self.inverse_relation: #  didirectional
+            related.set_default = False
+        setattr(self.inverse.model, attribute_name, related)

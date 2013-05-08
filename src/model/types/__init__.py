@@ -34,6 +34,7 @@ field should inheit from BaseType (see the base module).
 """
 
 from model.types.base import BaseType
+from model.types.belong_to import BelongTo
 from model.types.datetime_pa import DateTime
 from model.types.has_many import HasMany
 from model.types.has_one import HasOne

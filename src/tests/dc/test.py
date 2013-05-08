@@ -340,3 +340,18 @@ class AbstractDCTest:
         post_2.comments.append(comment_2)
         self.assertIn(comment_2, post_2.comments)
         self.assertIs(comment_2.post, post_2)
+
+    def test_uni_many2one(self):
+        """Test the unidirectional many2one relation."""
+        command_repository = Command._repository
+        product_repository = Product._repository
+        cmd = command_repository.create(opportunity="birthday")
+        product_1 = product_repository.create(name="an atlas", price=250,
+                quantity=1)
+        product_2 = product_repository.create(name="a map", price=2,
+                quantity=1)
+        cmd.products.append(product_1)
+        cmd.products.append(product_2)
+        self.assertIn(product_1, cmd.products)
+        self.assertIn(product_2, cmd.products)
+        self.assertRaises(TypeError, getattr, product_1, "command")

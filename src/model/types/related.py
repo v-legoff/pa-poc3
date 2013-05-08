@@ -74,7 +74,7 @@ class Related(BaseType):
         for field in foreign_fields:
             if isinstance(field, Related) and (get_name(
                     self.model) == field.foreign_model or isinstance(
-                    field.foreign_model, self.model)):
+                    field.foreign_model, type(self.model))):
                 foreign_field = field
                 foreign_field.foreign_model = self.model
                 break

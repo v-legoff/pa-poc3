@@ -221,7 +221,7 @@ class SQLDriver(Driver):
                 continue
 
             names.append(field_name)
-            values.append(line[field_name])
+            values.append(line.get(field_name))
 
         query += ", ".join(names) + ") values("
         query += ", ".join(self.generate_formats(len(values))) + ")"

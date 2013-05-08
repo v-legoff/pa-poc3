@@ -165,13 +165,13 @@ def update(to_update, dict_of_values):
     for name, value in dict_of_values.items():
         update_attr(to_update, name, value)
 
-def is_built(object):
+def is_built(model_object):
     """Return whether the object is built or not.
 
-    An object is build if its field attributes are not BaseType.
+    An object is built if its field attributes are not BaseType.
 
     """
-    fields = get_fields(type(object))
-    values = [getattr(object, field.field_name) for field in fields]
+    fields = get_fields(type(model_object), register=True)
+    values = [getattr(model_object, field.field_name) for field in fields]
     bases = [isinstance(field, BaseType) for field in values]
     return not any(bases)
