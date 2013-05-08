@@ -209,8 +209,8 @@ class YAMLDriver(Driver):
 
     def update_line(self, table_name, identifiers, element, value):
         """Update a line (does nothing)."""
-        pass
+        self.to_update.add(table_name)
 
     def remove_line(self, table_name, identifiers):
         """Delete the line (do nothing)."""
-        pass
+        self.to_update.add(table_name)

@@ -72,7 +72,7 @@ class Relation:
 
     # Constants
     TYPE_DELETE = 0
-    TYPE_MODIFICATION = 1
+    TYPE_MODIFY = 1
     TYPE_ADD = 2
 
     def __init__(self, owner, inverse):
@@ -125,6 +125,7 @@ class Relation:
             model_object -- the modified owner
             indices_or_slice -- the indices or slice of the modification
             old_values -- the old values (if modified or deleted)
+            new_values -- the new values (could be None if mod_type is DELETE)
             mod_type -- the type of moficiation (DELETE, MODIFICATION, ADD)
 
         This method should be called AFTER the owner's modification.

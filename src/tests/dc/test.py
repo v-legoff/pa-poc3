@@ -285,14 +285,58 @@ class AbstractDCTest:
         self.assertEqual(stored, published_at)
 
     def test_one2many(self):
-        """Test the one2many relation between posts anc comments."""
+        """Test the one2many relation between posts and comments.
+
+        This test is primarily used to see if, when a comment is defined
+        in a blog post, the blog post can retrieve this comment
+        accurately.
+
+        """
         post_repository = Post._repository
         comment_repository = Comment._repository
-        post = post_repository.create(title="my trip to California",
+        # Create two blog posts (without comments)
+        post_1 = post_repository.create(title="my trip to California",
                 content="excellent!")
-        comment_1 = comment_repository.create(post=post, content="always")
-        comment_2 = comment_repository.create(post=post, content="definitely")
-        self.assertIs(comment_1.post, post)
-        self.assertIs(comment_2.post, post)
-        self.assertIn(comment_1, post.comments)
-        self.assertIn(comment_2, post.comments)
+        post_2 = post_repository.create(title="one day in Paris",
+                content="great!")
+
+        # Create two comments in the first blog post
+        comment_1 = comment_repository.create(post=post_1, content="always")
+        comment_2 = comment_repository.create(post=post_1,
+                content="definitely")
+
+        # Check that the two comments are in the first blog post
+        self.assertIs(comment_1.post, post_1)
+        self.assertIs(comment_2.post, post_1)
+        self.assertIn(comment_1, post_1.comments)
+        self.assertIn(comment_2, post_1.comments)
+
+        # Try to update the second comment
+        comment_2.post = post_2
+        self.assertIs(comment_2.post, post_2)
+        self.assertIn(comment_2, post_2.comments)
+
+    def test_many2one(self):
+        """Test the many2one relation between posts and comments."""
+        post_repository = Post._repository
+        comment_repository = Comment._repository
+        # Create two blog posts (without comments)
+        post_1 = post_repository.create(title="a snowy day in New York City",
+                content="sometimes it happens.")
+        post_2 = post_repository.create(title="the car I didn't buy",
+                content="Shame")
+
+        # Create two comments in the first blog post
+        comment_1 = comment_repository.create(post=post_1, content="cold")
+        comment_2 = comment_repository.create(post=post_1,
+                content="no fear")
+
+        # Update the comments (delete)
+        del post_1.comments[1]
+        self.assertNotIn(comment_2, post_1.comments)
+        self.assertIsNot(comment_2.post, post_1)
+
+        # Update the comments (add)
+        post_2.comments.append(comment_2)
+        self.assertIn(comment_2, post_2.comments)
+        self.assertIs(comment_2.post, post_2)

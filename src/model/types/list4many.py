@@ -28,6 +28,7 @@
 
 """This module contains the List4Many class, described below."""
 
+from model.relations.base import Relation
 from model.representations.dc_mirror import DCMirror
 
 class List4Many(DCMirror):
@@ -48,26 +49,23 @@ class List4Many(DCMirror):
 
     def __delitem__(self, i):
         relation = self.field.relation
-        if isinstance(i, int):
-            relation.change_owner(self.model_object, i, None)
-        elif isinstance(i, slice):
-            if i.start is not None and i.stop is not None:
-                values = [None] * (i.stop - i.start)
-            elif i.start is not None:
-                values = [None] * (len(self.elements) - i.start)
-            else:
-                values = [None] * len(self.elements)
-
-            relation.change_owner(self.model_object, i, values)
-
+        old_values = self.elements[i]
+        model_object = self.model_object
         DCMirror.__delitem__(self, i)
+        relation.affect(model_object, i, old_values, None,
+                Relation.TYPE_DELETE)
 
     def __setitem__(self, i, values):
         relation = self.field.relation
-        relation.change_owner(self.model_object, i, values)
+        old_values = self.elements[i]
+        model_object = self.model_object
         DCMirror.__setitem__(self, i, values)
+        relation.affect(model_object, i, old_values, values,
+                Relation.TYPE_MODIFY)
 
     def insert(self, i, value):
         relation = self.field.relation
-        relation.change_owner(self.model_object, i, value)
-        DCMirror.__setitem__(self, i, values)
+        model_object = self.model_object
+        DCMirror.insert(self, i, value)
+        relation.affect(model_object, i, None, value,
+                Relation.TYPE_ADD)

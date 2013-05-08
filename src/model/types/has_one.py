@@ -92,6 +92,30 @@ class HasOne(Related):
         attribute_name = self.attribute_name
         return getattr(obj, attribute_name)
 
+    def set_related(self, obj, new_obj):
+        """Set the related field.
+
+        The value should be a model object.
+
+        """
+        from model.functions import get_pkey_values
+        attribute_name = self.attribute_name
+        model = self.foreign_model
+        if new_obj is None:
+            new_value = None
+        else:
+            if not isinstance(new_obj, model):
+                raise ValueError("try to affect {} to the {}.{} model " \
+                        "field".format(new_obj, self.model, self.field_name))
+
+            values = get_pkey_values(new_obj)
+            if len(values) == 1:
+                values = values[0]
+
+            new_value = values
+
+        setattr(obj, attribute_name, new_value)
+
     def extend(self):
         """Extend the model."""
         # First we create the relation if necessary
@@ -122,22 +146,6 @@ class HasOne(Related):
         given new_obj's primary keys.
 
         """
-        from model.functions import get_pkey_values
-        attribute_name = self.attribute_name
         old_value = getattr(obj, self.field_name)
-        model = self.foreign_model
-        if new_obj is None:
-            new_value = None
-        else:
-            if not isinstance(new_obj, model):
-                raise ValueError("try to affect {} to the {}.{} model " \
-                        "field".format(new_obj, self.model, self.field_name))
-
-            values = get_pkey_values(new_obj)
-            if len(values) == 1:
-                values = values[0]
-
-            new_value = values
-
-        setattr(obj, attribute_name, new_value)
+        self.set_related(obj, new_obj)
         self.relation.affect(obj, old_value, new_obj)

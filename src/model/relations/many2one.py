@@ -41,68 +41,37 @@ class Many2OneRelation(Relation):
     """
 
     name = "many2one"
-    def change_owner(self, model_object, indices_or_slice, new_values):
-        """Change the owning's side.
+    def affect(self, model_object, indice_or_slice, old_values, new_values,
+            mod_type):
+        """Affect the inverse's side (a single object).
 
-        We need:
-            The indices or slice that changed
-            The new value(s).
-
-        If the values only contain None object, then it's a deletion.  If
-        it's an addition, then the indices are just outside of the field's
-        indices.  If it's a mere modification, the indices are present
-        in the field.
-
-        """
-        indicesor_slice, new_values = self.convert_to_list(indice_or_slices,
-                new_values)
-        if all(value is None for value in new_values):
-            # Deletion
-            for model_object in self.owner.get_cache(model_object).mirror[ \
-                    indices_or_slice]:
-                self.set_value(model_object, self.inverse.field_name, None)
-
-            del self.owner.get_cache(model_object).mirror[indices_or_slice]
-        else:
-            try:
-                old_values = self.owner.get_cache(model_object).mirror[ \
-                        indices_or_slice]
-                assert old_values
-            except (IndexError, AssertionError):
-                # The new values are being added
-                for value in new_values:
-                    self.owner.get_cache(model_object).mirror.append(value)
-                    self.set_value(value, self.inverse.field_name,
-                            self.inverse)
-            else:
-                # Mere modification
-                for value in old_values:
-                    self.set_value(value, self.inverse.field_name, None)
-                for value in new_values:
-                    self.set_value(value, self.inverse.field_name,
-                            self.inverse)
-                self.owner.get_cache(model_object).mirror[ \
-                        indices_or_slice] = values
-
-    def change_inverse(self, model_object, new_inverse):
-        """Change the inverse of the relation.
-
-        The inverse is ALWAYS a single object, as this is a many2one relation.
-        The 'one' part indicates that the inverse's side is always a single
-        model object.
-
-        Therefore, this method:
-            Delete the previous inverse if needed
-            Change the inverse's side
-            Add the new inverse to the many side.
+        Depending on the mod_type attribute (delete, add or modify),
+        different actions are performed.  In any case, the List4Many
+        representing the many's part of this relation (the owning's side)
+        affects the inverse's side (the one part of the many2one
+        relation).  If the model is deleted, then the related is set
+        to None.  If not, the old_values are updated to match the
+        corresponding actions.
 
         """
-        #if self.inverse:
-        #    self.owner.get_cache(model_object).mirror.remove(model_object)
+        indice_or_slice, old_values = self.convert_to_list(indice_or_slice,
+                old_values)
+        if new_values is not None and not isinstance(new_values, list):
+            new_values = [new_values]
 
-        self.set_value(model_object, self.inverse.field_name,
-                new_inverse)
-        self.owner.get_cache(model_object).mirror.append(new_inverse)
+        if mod_type == Relation.TYPE_DELETE:
+            for old_object in old_values:
+                self.inverse.set_related(old_object, None)
+            return
+
+        if mod_type == Relation.TYPE_MODIFY:
+            for old_object in old_values:
+                if old_object not in new_values:
+                    self.inverse.set_related(old_object, None)
+
+        if mod_type in [Relation.TYPE_MODIFY, Relation.TYPE_ADD]:
+            for new_object in new_values:
+                self.inverse.set_related(new_object, model_object)
 
     def retrieve_objects(self, model_object):
         """Retrieve the objects of the many part.
