@@ -149,7 +149,7 @@ class RepositoryManager(metaclass=ABCMeta):
         lines = self.driver.find_matching_lines(plural_name, matches)
         objects = []
         for line in lines:
-            model_object = self.get_or_build_model(name, line)
+            model_object = self.get_or_build_object(name, line)
             objects.append(model_object)
 
         return objects

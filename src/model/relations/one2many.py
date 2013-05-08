@@ -58,7 +58,6 @@ class One2ManyRelation(Relation):
         if old_mirror and model_object in old_mirror:
             old_mirror.remove(model_object)
 
-        print("Add", self.inverse, self.inverse.get_cache(new_value).mirror, new_mirror)
         if new_mirror is not None:
             new_mirror.append(model_object)
 

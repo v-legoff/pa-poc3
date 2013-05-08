@@ -39,6 +39,9 @@ class SQLRepositoryManager(RepositoryManager):
     def record_model(self, model):
         """Record the given model."""
         RepositoryManager.record_model(self, model)
+
+    def add_model(self, model):
+        """Add the new model."""
         table = self.build_table(model)
         self.driver.add_table(table)
 

@@ -26,6 +26,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+from datetime import datetime
+
 from model import *
 
 class Post(Model):
@@ -34,4 +36,5 @@ class Post(Model):
 
     title = String()
     content = String()
-    published_at = DateTime()
+    published_at = DateTime(default=lambda o: datetime.now())
+    comments = HasMany("Comment")

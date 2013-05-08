@@ -187,9 +187,16 @@ class SQLDriver(Driver):
         """
         table = self.tables[table_name]
         query = "SELECT * FROM " + table_name
-        query += " WHERE " + " AND ".join(match + "=?" for \
-                match in matches)
-        rows = self.execute_query(query, *matching.values())
+        formats = self.generate_formats(len(matches))
+        if matches:
+            query += " WHERE "
+
+        lines = []
+        for match, format in zip(matches, formats):
+            lines.append(match + "=" + format)
+
+        query += " AND ".join(lines)
+        rows = self.execute_query(query, *matches.values())
         lines = []
         for row in rows:
             line = {}

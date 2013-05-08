@@ -94,7 +94,7 @@ class AbstractDCTest:
     def setUp(self):
         """Set up the data connector."""
         self.setup_data_connector()
-        self.dc.repository_manager.clear()
+        #self.dc.repository_manager.clear()
 
     def tearDown(self):
         """Destroy the data connector and tear it down."""
@@ -114,6 +114,8 @@ class AbstractDCTest:
         self.dc.repository_manager.record_models(models)
         for model in models:
             model._repository.data_connector = self.dc
+            type(model).extend(model)
+            self.dc.repository_manager.add_model(model)
 
     def teardown_data_connector(self, destroy=False):
         """Tear down the data connector."""
@@ -281,3 +283,16 @@ class AbstractDCTest:
         stored = int(published_at.timestamp())
         published_at = int(post.published_at.timestamp())
         self.assertEqual(stored, published_at)
+
+    def test_one2many(self):
+        """Test the one2many relation between posts anc comments."""
+        post_repository = Post._repository
+        comment_repository = Comment._repository
+        post = post_repository.create(title="my trip to California",
+                content="excellent!")
+        comment_1 = comment_repository.create(post=post, content="always")
+        comment_2 = comment_repository.create(post=post, content="definitely")
+        self.assertIs(comment_1.post, post)
+        self.assertIs(comment_2.post, post)
+        self.assertIn(comment_1, post.comments)
+        self.assertIn(comment_2, post.comments)

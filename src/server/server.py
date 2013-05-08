@@ -194,6 +194,7 @@ class Server:
 
         for model in self.models:
             type(model).extend(model)
+            self.data_connector.repository_manager.add_model(model)
 
     def run(self):
         """Run the server."""
