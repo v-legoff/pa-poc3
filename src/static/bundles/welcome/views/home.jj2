@@ -1,0 +1,6 @@
+<% extends "layout/base.jj2" %>
+<% block title %>Python Aboard - welcome!<% endblock %>
+    <% block content %>
+        <h1>Congratulations!</h1>
+        <p>You have just reached the welcome page.</p>
+    <% endblock %>

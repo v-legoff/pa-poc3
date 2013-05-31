@@ -1,9 +1,9 @@
 # Copyright (c) 2013 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,11 +31,12 @@
 import os
 
 from command import *
+from system.reccopy import copydir
 
 class Bundle(Command):
-    
+
     """Command 'create bundle'.
-    
+
     This command is used to create a new bundle, that is the bundle directory
     and its content on a stantd basis.  If the '--default' option is
     specified, then the bundle is create based on default
@@ -45,9 +46,9 @@ class Bundle(Command):
     For instance, the user can create controllers, routes, models and
     services.  Of course, she will need to edit the files afterward
     because they will be somewhat empty.
-    
+
     """
-    
+
     name = "bundle"
     parent = "create"
     brief = "create a new bundle"
@@ -59,12 +60,12 @@ class Bundle(Command):
         "allows you to create a bundle without prompting for additional " \
         "informations.  It is, therefore, useful if you wish to create a " \
         "new bundle automatically."
-    
+
     def __init__(self):
         Command.__init__(self)
         self.parser.add_argument("name", help="the new bundle's name")
         self.parser.add_argument("--default", action="store_true")
-    
+
     def execute(self, namespace):
         """Execute the command."""
         # First, check that the bundle as a valid name
@@ -74,6 +75,13 @@ class Bundle(Command):
         if os.path.exists(directory):
             raise InteruptCommand("the directory {} already exists".format(
                     repr(directory)))
-        
+
         os.makedirs(directory)
         print("Bundle {} created".format(repr(name)))
+
+        # Create a default bundle
+        if len(self.server.bundles) == 0 or namespace.default:
+            origin = os.path.join(self.server.source_directory, "static",
+                    "bundles", "welcome")
+            copydir(origin, directory, bundle=name)
+            print("A default configuration was set.")

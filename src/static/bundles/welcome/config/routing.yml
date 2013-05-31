@@ -1,0 +1,4 @@
+# Controller: Welcome
+home:
+  pattern: /
+  controller: {bundle}.Welcome.home

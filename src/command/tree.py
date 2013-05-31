@@ -91,7 +91,9 @@ class Tree:
     def process(self, to_interpret):
         """Walk the tree to find the right command.
 
-        Like the Command.process function, it accepts a list of strings or a string.  In the former case, it is used directly.  In the later one, it is converted in a list using 'shlex.split'.
+        Like the Command.process function, it accepts a list of strings or a
+        string.  In the former case, it is used directly.  In the later one,
+        it is converted in a list using 'shlex.split'.
 
         """
         if isinstance(to_interpret, str):
