@@ -53,4 +53,4 @@ if command:
     command.server = server
     command.execute(args)
     if command.project_created:
-        Model.data_connector.loop()
+        Model.data_connector.repository_manager.save()

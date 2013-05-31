@@ -90,20 +90,20 @@ class Related(BaseType):
         cls_inverse_relation = None
         if nb_self == 0:
             return None
-        elif nb_self < 0:
-            if nb_foreign >= 1:
+        elif nb_self == -1:
+            if nb_foreign == 1:
                 cls_relation = Many2OneRelation
                 cls_inverse_relation = One2ManyRelation
-            elif nb_foreign < 0:
+            elif nb_foreign == -1:
                 # many2many
                 pass
             else:
                 cls_relation = Many2OneRelation
         else:
-            if nb_foreign >= 1:
+            if nb_foreign == 1:
                 # one2one
                 pass
-            elif nb_foreign < 0:
+            elif nb_foreign == -1:
                 cls_relation = One2ManyRelation
                 cls_inverse_relation = Many2OneRelation
             else:
