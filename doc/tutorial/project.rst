@@ -25,19 +25,19 @@ user configuration (stored in the project's directory).  Python Aboard
 will read this configuration, load the Python files and execute them if
 needed and build a full web site with it.
 
--------------------------------
 Python Aboard's main executable
+-------------------------------
 
 Remember:  Python Aboard is a software.  You will execute it to manage
 your project.  As we are, for now, using the source files directly, you
 need to launch "src/aboard.py" with Python 3.3.
 
 First, you need to open a console.  Under Linux I don't think you will have
-much trouble to do it.  Under Windows, you have to find the command-line.
+much trouble doing it.  Under Windows, you have to find the command-line.
 One of the way is to open the "Execute" menu (you can press Windows + R),
 enter "cmd" and press return.
 
-Then you need to launch the Python Aboard's main executable.
+Then you need to launch the Python Aboard's main executable::
 
     # Under Linux it may be something like that
     python3.3 ~/pa-poc3/src/aboard.py
@@ -48,7 +48,7 @@ Then you need to launch the Python Aboard's main executable.
 Yes, Under Windows, it's a somewhat longer command but there are ways to
 shorten it with some configuration, out of the scope of this tutorial.
 
-If everything works, you should get a reminder of the Python Aboard's commands:
+If everything works, you should get a reminder of the Python Aboard's commands::
 
     Python Aboard Command Line
 
@@ -60,15 +60,15 @@ If everything works, you should get a reminder of the Python Aboard's commands:
 The Python Aboard's executable expects some kind of action.  By now,
 create, list or start.  Here we want to create a new project.
 
-----------------------
 Creating a new project
+----------------------
 
 We're going to use the "create project" command.  It takes only one
 parameter:  the project's name that will be the newly created directory's
 name, as well.
 
 Note: for now on, I'll skip the complete command used to launch the
-Python Aboard's main executable.  Remember to use the full command.
+Python Aboard's main executable.  Remember to use the full command::
 
     > aboard.py create project try-pa
     done
@@ -79,7 +79,7 @@ The tool is not very talkitive, but it created a directory called
 * "bundles": the directory that will contain the project's bundles (details
   below).
 * "config": the directory containing the standard project configuration.
-  Mostly, in it's one of the configuration file that you will specify
+  Mostly, in it's one of the configuration files that you will specify
   the hostname and port of your web server.
 * "layout": this directory contains the general structure of your pages.
   This structure is used by the templating system and we will comeback
@@ -97,20 +97,20 @@ The Python Aboard's main executable created the basic structure of
 the project and we will use it in the next sections of this tutorial.  But
 we can do something already...
 
------------------------
 Starting the web server
+-----------------------
 
 Starting our web server is simple.  we will use one of the command of
 the Python Aboard's main executable.  But first we have to move to the
 "try-pa" directory that has been created by the "create project"
-command.
+command::
 
-    > cd tr-pa
+    > cd try-pa
     > aboard.py start server
 
 One more time, remember to use the full command to launch the Python
 Aboard's main executable.  After entering the "start server" command,
-you should see some messages like this:
+you should see some messages like this::
 
     [31/May/2013:14:11:36] ENGINE Listening for SIGTERM.
     [31/May/2013:14:11:36] ENGINE Bus STARTING
