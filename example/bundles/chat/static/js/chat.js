@@ -21,7 +21,7 @@ function connectWS(parameters)
                 $('#history').html(history + "<br />" + last_message);
                 $('#last_message').html("<strong>" + message + "</strong>");
             },
-            
+
             message: function(e) {
                 var message = e.data.message;
                 var message = e.data.message;
@@ -30,8 +30,11 @@ function connectWS(parameters)
                 $('#history').html(history + "<br />" + last_message);
                 $('#last_message').html(message);
                 $('#snd_message')[0].play();
+                $('#messages').animate(
+                    {"scrollTop": $('#messages')[0].scrollHeight}, "fast"
+                );
             },
-            
+
             setpseudo: function(e) {
                 pseudo = e.data.pseudo;
                 newpseudo = e.data.newpseudo;
@@ -42,11 +45,11 @@ function connectWS(parameters)
                     $('#snd_connect')[0].play();
                 }
             },
-            
+
             update_online: function(e) {
                 nb_online = e.data.nb_online;
                 pseudos = e.data.pseudos;
-                if(nb_online == 0) 
+                if(nb_online == 0)
                 {
                     var message = "There is nobody connected yet";
                     $('#connected_list').html("");
@@ -81,9 +84,9 @@ $(document).ready(function()
     $('#settings').hide();
     $('div.settings_tab').hide();
     $('#settings_sounds').show();
-    
+
     // Functions definition
-    
+
     /**
      * Save the sounds settings
      */
@@ -102,7 +105,7 @@ $(document).ready(function()
             audio.load();
         });
     }
-    
+
     /**
      * Save the current (visible tab) settings
      */
@@ -116,9 +119,9 @@ $(document).ready(function()
             save_sounds_settings();
         }
     }
-    
+
     // Page events
-    
+
     /**
      * When the link to show / hide the list of connected is clicked on
      */
@@ -136,7 +139,7 @@ $(document).ready(function()
         }
         return false;
     });
-    
+
     /**
      * When the pseudo is set or changed
      */
@@ -146,7 +149,7 @@ $(document).ready(function()
         ws.send("setpseudo", {"pseudo": pseudo});
         return false;
     });
-    
+
     /**
      * When the send button is clicked on
      */
@@ -157,7 +160,7 @@ $(document).ready(function()
         $('#message').val("");
         return false;
     });
-    
+
     /**
      * Display or hide the settings tab
      * If the setting tab is visible, the configuration set is not applied
@@ -175,7 +178,7 @@ $(document).ready(function()
         }
         return false;
     });
-    
+
     /**
      * Test the selected audio file
      */
@@ -195,7 +198,7 @@ $(document).ready(function()
         audio.play();
         return false;
     });
-    
+
     $('a.tab_setting').click(function()
     {
         // Get the name of the pressed link
@@ -205,16 +208,16 @@ $(document).ready(function()
         save_settings();
         $('div.settings_tab').hide();
         $(tab_id).show();
-        return false;   
+        return false;
     });
-    
+
     $('#save_settings').click(function()
     {
         save_settings();
         $('#settings').hide();
         return false;
     });
-    
+
     $('#close_settings').click(function()
     {
         $('#settings').hide();
