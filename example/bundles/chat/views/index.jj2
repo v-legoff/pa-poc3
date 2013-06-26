@@ -11,6 +11,7 @@
         </audio>
     <% endfor %>
         <h1>Chat window</h1>
+        <= "vanciamud@gmail.com"|scramble =>
         <p><em>Welcome</em> on the Chat Window.<br />
         <span id="nb_online">There is nobody connected yet</span>
         (<a id="detail_connected" href="">show the list</a>).</p>

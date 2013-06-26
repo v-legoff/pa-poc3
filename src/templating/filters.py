@@ -1,9 +1,9 @@
 # Copyright (c) 2012 LE GOFF Vincent
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +12,7 @@
 # * Neither the name of the copyright holder nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -28,39 +28,70 @@
 
 """Module containing the TemplateFilters class."""
 
+from random import randint
+
 class TemplateFilters:
-    
+
     """Class containing the templates filters.
-    
+
     The methods defined in this class are usable as filters
     inside Jinja2 templates.  New methods are atuomatically added to
     the list of filters.
-    
+
     For instance, if you define an instance method like that:
     >>>     def wiki(self, text):
     You can call it in a template like that:
         "some text"|wiki
-    
+
     The first argument ('self' as in any instance methods) is used
     to reach global informations, such as the server.
-    
+
     """
-    
+
     def __init__(self, server, filters):
         """Initialize and add the functions."""
         for name in dir(self):
             function = getattr(self, name)
             if not callable(function):
                 continue
-            
+
             if name.startswith("_"):
                 continue
-            
+
             filters[name] = function
-        
+
         self.server = server
-    
+
     def wiki(self, text):
         """Return the wiki formatted text."""
         wiki_service = self.server.services.wiki
         return wiki_service.convert_text(text)
+
+    def scramble(self, address):
+        """Scramble the address (usually an e-mail address).
+
+        The e-mail address is scrambled using JavaScript.
+
+        Required parameters:
+            address -- the e-mail address
+
+        """
+        MIN_RAND = 200
+        MAX_RAND = 400
+        first = randint(MIN_RAND, MAX_RAND)
+        values = [first]
+        for letter in address:
+            last = values[-1]
+            value = ord(letter) - last
+            values.append(value)
+
+        code = \
+            "<script type=\"text/javascript\">\n" \
+            "var t={letters};\n" \
+            "for (var i=1; i<t.length; i++)\n" \
+            "{{\n" \
+            "    document.write(String.fromCharCode(t[i] + t[i-1]));\n" \
+            "}}\n" \
+            "</script>\n".format(letters=values)
+
+        return code

@@ -51,3 +51,8 @@ def stop_process(pid):
 
     """
     os.system("taskkill /PID {} /F > NUL 2> NUL".format(pid))
+
+def execute_command(cmd):
+    """Execute the command in another window."""
+    cmd = "start " + cmd
+    os.system(cmd)

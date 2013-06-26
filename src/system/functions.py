@@ -59,7 +59,7 @@ def get_executable_command():
     """
     executable = sys.executable
     source = get_source_directory()
-    if os.path.basename(executable).lower in ("python", "python.exe"):
+    if os.path.basename(executable).lower() in ("python", "python.exe"):
         executable += " " + os.path.join(source, "aboard.py")
     elif os.path.basename(executable) == "winservice.exe":
         executable = os.path.join(source, "aboard")
