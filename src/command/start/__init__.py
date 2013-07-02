@@ -34,6 +34,6 @@ The sub-commands are defined in sub-packages.
 """
 
 from command.start import console
-from command.start import master
+#from command.start import master
 from command.start import server
 from command.start import start
