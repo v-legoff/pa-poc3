@@ -70,6 +70,8 @@ class Related(BaseType):
 
         # Now we try to find the inverse field
         foreign_fields = get_fields(self.foreign_model, register=False)
+        foreign_fields = [field for field in foreign_fields if \
+                field is not self]
         foreign_field = None
         for field in foreign_fields:
             if isinstance(field, Related) and (get_name(
