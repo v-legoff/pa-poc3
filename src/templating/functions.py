@@ -79,7 +79,10 @@ class TemplateFunctions:
             host = self.server.hostname
 
         if port is None:
-            port = self.server.port
+            port = self.server.forwarding_port
+            if port is None:
+                port = self.server.port
+
 
         if protocol == "http" and port == 80:
             address = "{protocol}://{host}/"
