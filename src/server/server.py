@@ -57,6 +57,7 @@ class Server:
     def __init__(self, user_directory, check_dir=True):
         self.host = "127.0.0.1"
         self.port = 9000
+        self.forwarding_port = None
         self.hostname = "localhost"
         if check_dir:
             self.user_directory = self.check_directory(user_directory)
@@ -141,6 +142,8 @@ class Server:
                 self.port = server["port"]
             if "hostname" in server:
                 self.hostname = server["hostname"]
+            if "forwarding_port" in server:
+                self.forwarding_port = server["forwarding_port"]
 
         # DataConnector configuration
         dc_conf = self.configurations["data_connector"].datas
