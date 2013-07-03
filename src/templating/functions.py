@@ -88,6 +88,8 @@ class TemplateFunctions:
 
         address = address.format(protocol=protocol, host=host, port=port)
         if path:
+            if path.startswith("/"):
+                path = path[1:]
             address += path
 
         return address
@@ -109,7 +111,8 @@ class TemplateFunctions:
                     "given".format(len(route.patterns), len(parameters)))
 
         parameters = [str(param) for param in parameters]
-        href = route.get_path(*parameters) + ".jj2"
+        href = route.get_path(*parameters) + "/"
+        href = self.full_URL(path=href)
         confirmation = ""
         if confirm:
             confirmation = " onclick=\"return confirm('" + confirm + "')\""
