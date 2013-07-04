@@ -26,7 +26,27 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Package containing the default routing patterns."""
+"""Module containing the SlugPattern, defined below."""
 
-from router.pattern.id_type import IDPattern
-from router.pattern.slug_type import SlugPattern
+from router.pattern.base import PatternType
+
+class SlugPattern(PatternType):
+
+    """Patter type: slug.
+
+    This pattern type expects a slug, a sequence of letters and numbers
+    with the underscore used as a separator.
+
+    """
+
+    name = "slug"
+    regex = r"[A-Za-z0-9_]+"
+
+    def convert(self, expression):
+        """Return the converted expression.
+
+        The expression was previously validated by the regex, so it
+        is returned as is.
+
+        """
+        return expression

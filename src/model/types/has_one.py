@@ -134,7 +134,7 @@ class HasOne(Related):
 
         key = self.get_related(obj)
         repository = self.foreign_model._repository
-        if key is None or isinstance(key, BaseType):
+        if bool(key) == False or isinstance(key, BaseType):
             return None
 
         return repository.find(key)
