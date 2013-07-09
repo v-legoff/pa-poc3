@@ -97,7 +97,8 @@ class TemplateFunctions:
 
         return address
 
-    def link_to(self, route, *parameters, name="here", confirm=None):
+    def link_to(self, route, *parameters, name="here", confirm=None,
+            class_name=""):
         """Return a <a> tag.
 
         The route must be its name given in the 'routing.yml'
@@ -119,6 +120,9 @@ class TemplateFunctions:
         confirmation = ""
         if confirm:
             confirmation = " onclick=\"return confirm('" + confirm + "')\""
-        link = "<a href=\"{href}\"{confirmation}>{name}</a>".format(
-                href=href, name=name, confirmation=confirmation)
+        if class_name:
+            class_name = " class=\"" + class_name + "\""
+        link = "<a href=\"{href}\"{confirmation}{class_name}>{name}</a>"
+        link = link.format(href=href, name=name, confirmation=confirmation,
+                class_name=class_name)
         return link
